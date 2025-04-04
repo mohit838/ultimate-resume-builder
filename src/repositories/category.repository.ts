@@ -1,6 +1,6 @@
 import Database from "@/config/dbConfig"
-import { CategoryCreateInput } from "@/models/category.model"
-import { ResultSetHeader } from "mysql2"
+import { CategoryCreateInput, FetchAllCategory } from "@/models/category.model"
+import { ResultSetHeader, RowDataPacket } from "mysql2"
 
 export const createCategory = async (
     input: CategoryCreateInput
@@ -12,4 +12,12 @@ export const createCategory = async (
         [input.name, input.description || null]
     )
     return result.insertId
+}
+
+export const getAllCategories = async (): Promise<FetchAllCategory[]> => {
+    const db = await Database.getInstance()
+
+    const [rows] = await db.execute<RowDataPacket[]>("SELECT * FROM categories")
+
+    return rows as FetchAllCategory[]
 }

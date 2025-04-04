@@ -1,4 +1,7 @@
-import { createCategory } from "@/controllers/category.controller"
+import {
+    createCategory,
+    getAllCategory,
+} from "@/controllers/category.controller"
 import { asyncHandler } from "@/helper/hof"
 import express from "express"
 import { body } from "express-validator"
@@ -16,5 +19,7 @@ router.post(
     ],
     asyncHandler(createCategory)
 )
+
+router.get("/", asyncHandler(getAllCategory))
 
 export default router

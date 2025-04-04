@@ -2,14 +2,14 @@ import { Response } from "express"
 
 export const successResponse = (
     res: Response,
-    data: any = null,
+    model: any = null,
     message: string = "Success",
     status: number = 200
 ) => {
     res.status(status).json({
         success: true,
         message,
-        data,
+        model,
     })
 }
 

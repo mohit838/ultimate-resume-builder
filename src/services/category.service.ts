@@ -1,5 +1,5 @@
 import { CustomError } from "@/errors/CustomError"
-import { CategoryCreateInput } from "@/models/category.model"
+import { CategoryCreateInput, FetchAllCategory } from "@/models/category.model"
 import * as repo from "@/repositories/category.repository"
 
 export const createCategoryService = async (data: CategoryCreateInput) => {
@@ -12,4 +12,8 @@ export const createCategoryService = async (data: CategoryCreateInput) => {
 
     const id = await repo.createCategory(data)
     return { id, ...data }
+}
+
+export const getAllCategoryService = async (): Promise<FetchAllCategory[]> => {
+    return await repo.getAllCategories()
 }

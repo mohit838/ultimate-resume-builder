@@ -41,8 +41,11 @@ app.use(
 )
 
 // Routes
+import logRoutes from "@/routes/logs.routes"
 import categoryRoutes from "./routes/category.routes"
+
 app.use("/api/categories", categoryRoutes)
+app.use("/api/logs", logRoutes)
 
 // Health check route
 app.get("/health", async (_req: Request, res: Response) => {

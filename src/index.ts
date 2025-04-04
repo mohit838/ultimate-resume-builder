@@ -2,6 +2,7 @@ import cors from "cors"
 import express, { Request, Response } from "express"
 import helmet from "helmet"
 import morgan from "morgan"
+
 import { ALLOWED_ORIGINS, SERVICE_CONFIG } from "./config/AppConstant"
 import Database from "./config/dbConfig"
 import redisClient from "./config/redisClient"
@@ -9,11 +10,12 @@ import { errorHandler } from "./errors/errorHandler"
 import logger from "./logger/logger"
 import appRateLimiter from "./utils/appRateLimiter"
 
+// Create app
 const app = express()
 const serviceName = SERVICE_CONFIG.name
-const servicePort = SERVICE_CONFIG.port || 1234
+const servicePort = Number(SERVICE_CONFIG.port) || 1234
 
-// Configure CORS
+// CORS
 const corsOptions: cors.CorsOptions = {
     origin: (origin, callback) => {
         if (!origin || ALLOWED_ORIGINS.includes(origin)) {
@@ -27,20 +29,20 @@ const corsOptions: cors.CorsOptions = {
     credentials: true,
 }
 
+// Middleware
 app.use(cors(corsOptions))
 app.use(helmet())
 app.use(express.json({ limit: "3mb" }))
 app.use(appRateLimiter)
-
-// Logger
 app.use(
-    morgan("combined", {
+    morgan("dev", {
         stream: { write: (message) => logger.info(message.trim()) },
     })
 )
 
-// API routes
-// upcomming
+// Routes
+import categoryRoutes from "./routes/category.routes"
+app.use("/api/categories", categoryRoutes)
 
 // Health check route
 app.get("/health", async (_req: Request, res: Response) => {
@@ -49,34 +51,32 @@ app.get("/health", async (_req: Request, res: Response) => {
         res.status(200).json({ msg: "Service health is ok!" })
     } catch (error: any) {
         res.status(500).json({
-            msg: "Service health check failed!",
+            msg: "Health check failed",
             error: error.message,
         })
     }
 })
 
-// 404 route
+// 404
 app.use((_req: Request, res: Response) => {
     res.status(404).json({ msg: "Route not found!" })
 })
 
-// Error handler
+// Global error handler
 app.use(errorHandler)
 
-// Server setup
+// Start server
 async function initializeServer() {
     try {
-        // Connect MySQL
         await Database.getInstance()
+
+        // ensureTablesExist()
 
         app.listen(servicePort, () => {
             console.log(`${serviceName} is listening on port ${servicePort}`)
         })
     } catch (error: any) {
-        console.error(
-            "Failed to set up or connect to the database:",
-            error.message
-        )
+        console.error("❌ Failed to start server:", error.message)
         process.exit(1)
     }
 }
@@ -85,7 +85,7 @@ async function initializeServer() {
 const shutdown = async () => {
     await redisClient.disconnect()
     await Database.close()
-    console.log("MySQL and Redis clients have been closed.")
+    console.log("✅ Redis and MySQL connections closed.")
     process.exit(0)
 }
 

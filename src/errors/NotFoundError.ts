@@ -1,10 +1,7 @@
-import { CustomError } from "@/errors/CustomError"
+import { CustomError } from "./CustomError"
 
 export class NotFoundError extends CustomError {
-    status: number
-    constructor(message: string) {
-        super(message)
-        this.name = "NotFoundError"
-        this.status = 404
+    constructor(message: string = "Resource not found") {
+        super(message, 404)
     }
 }

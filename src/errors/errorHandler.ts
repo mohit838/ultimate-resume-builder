@@ -1,29 +1,25 @@
-import { CustomError } from "@/errors/CustomError"
 import logger from "@/logger/logger"
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
+import { CustomError } from "./CustomError"
 
 export const errorHandler = (
     err: Error & { status?: number },
     req: Request,
-    res: Response
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
 ) => {
-    // Determine status code from CustomError, or fallback to default
     const statusCode = err instanceof CustomError ? err.status : 500
 
-    // Log the error
-    logger.error(`${statusCode} - ${err.message} - ${req.method} - ${req.url}`)
+    logger.error(`${statusCode} - ${err.message} - ${req.method} ${req.url}`)
 
-    // Respond to client
     res.status(statusCode).json({
         success: false,
         message:
             statusCode === 500
                 ? "Internal Server Error"
-                : err.message || "An unexpected error occurred",
+                : err.message || "Something went wrong",
     })
 
-    // Optionally log stack trace in development for server errors
-    if (statusCode === 500) {
-        console.error(err.stack)
-    }
+    if (statusCode === 500) console.error(err.stack)
 }

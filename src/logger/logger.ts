@@ -37,7 +37,7 @@ function getLogger() {
 
                 // MongoDB transport for audit logs
                 new transports.MongoDB({
-                    level: "info",
+                    level: "audit-info",
                     db: mongoUri,
                     collection: auditLogCollection,
                     format: format.combine(format.timestamp(), format.json()),
@@ -46,7 +46,7 @@ function getLogger() {
 
                 // MongoDB transport for login history
                 new transports.MongoDB({
-                    level: "info",
+                    level: "login-info",
                     db: mongoUri,
                     collection: loginHistoryCollection,
                     format: format.combine(format.timestamp(), format.json()),

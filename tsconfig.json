@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // Use ESNext syntax
+    "lib": ["ES6"], // Enable ES6 library features
+    "module": "CommonJS", // Set to ESNext for ES module syntax
+    "moduleResolution": "node", // Use Node module resolution
+    "outDir": "./dist", // Output directory for compiled files
+    "rootDir": "./src", // Root directory of source files
+    "strict": true, // Enable strict type-checking
+    "esModuleInterop": true, // Enable interoperability with CommonJS modules
+    "forceConsistentCasingInFileNames": true, // Ensure consistent casing in imports
+    "skipLibCheck": true, // Skip type checking of all declaration files
+    "resolveJsonModule": true, // Allow importing JSON files
+    "sourceMap": true, // Generate source maps
+    "typeRoots": ["./src/types", "./node_modules/@types"], // Custom type definitions
+    "allowSyntheticDefaultImports": true, // Allow synthetic default imports
+    "baseUrl": "./src", // Base directory for path aliases
+    "types": ["node", "express"], // Types for node and express
+    "paths": {
+      "@/*": ["*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/types/**/*.d.ts"], // Include all TS files in src
+  "exclude": ["node_modules", "dist", "logs"]
+}

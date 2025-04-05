@@ -9,17 +9,24 @@ export const errorHandler = (
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: NextFunction
 ) => {
-    const statusCode = err instanceof CustomError ? err.status : 500
+    const statusCode = err instanceof CustomError ? err.statusCode : 500
 
     logger.error(`${statusCode} - ${err.message} - ${req.method} ${req.url}`)
 
-    res.status(statusCode).json({
+    const responseBody: any = {
         success: false,
         message:
             statusCode === 500
                 ? "Internal Server Error"
                 : err.message || "Something went wrong",
-    })
+    }
+
+    // 🛠 Add this to show validation or custom error details
+    if (err instanceof CustomError && err.errors) {
+        responseBody.errors = err.errors
+    }
+
+    res.status(statusCode).json(responseBody)
 
     if (statusCode === 500) console.error(err.stack)
 }

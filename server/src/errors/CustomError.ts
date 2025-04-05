@@ -1,14 +1,13 @@
 export class CustomError extends Error {
-    status: number
+    statusCode: number
+    errors?: any
 
-    constructor(message: string, status: number = 500) {
+    constructor(message: string, statusCode = 500, errors?: any) {
         super(message)
-        this.name = this.constructor.name
-        this.status = status
+        this.statusCode = statusCode
+        this.errors = errors
 
-        if (Object.setPrototypeOf) {
-            Object.setPrototypeOf(this, new.target.prototype)
-        }
+        Object.setPrototypeOf(this, CustomError.prototype)
     }
 }
 

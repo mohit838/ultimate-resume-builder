@@ -42,9 +42,9 @@ app.use(
 
 // Routes
 import logRoutes from "@/routes/logs.routes"
-import categoryRoutes from "./routes/category.routes"
+import authRoutes from "./routes/auth.routes"
 
-app.use("/api/categories", categoryRoutes)
+app.use("/api/auth", authRoutes)
 app.use("/api/logs", logRoutes)
 
 // Health check route
@@ -73,6 +73,7 @@ async function initializeServer() {
     try {
         await Database.getInstance()
 
+        // only execute for first time
         // ensureTablesExist()
 
         app.listen(servicePort, () => {

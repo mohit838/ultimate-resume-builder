@@ -41,8 +41,8 @@ app.use(
 )
 
 // Routes
+import authRoutes from "@/routes/auth.routes"
 import logRoutes from "@/routes/logs.routes"
-import authRoutes from "./routes/auth.routes"
 
 app.use("/api/auth", authRoutes)
 app.use("/api/logs", logRoutes)

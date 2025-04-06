@@ -1,3 +1,4 @@
+// Database level interface
 export interface IUser {
     id: number
     name: string
@@ -9,6 +10,7 @@ export interface IUser {
     updated_at: Date
 }
 
+// Service  related interface
 export interface ISignUp {
     name: string
     email: string
@@ -18,4 +20,9 @@ export interface ISignUp {
 export interface IOtpVerification {
     otp_code: number
     otp_expires_at: Date
+}
+
+export interface ILogin {
+    email: string
+    password: string
 }

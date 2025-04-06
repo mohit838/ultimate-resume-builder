@@ -1,5 +1,5 @@
 import { successResponse } from "@/helper/ApiResponse"
-import { createSignUpService } from "@/services/auth.service"
+import { createSignUpService, userLoginService } from "@/services/auth.service"
 import { Request, Response } from "express"
 
 export const signUp = async (req: Request, res: Response) => {
@@ -11,5 +11,16 @@ export const signUp = async (req: Request, res: Response) => {
         password,
     })
 
-    return successResponse(res, newUser, "User created", 201)
+    return successResponse(res, newUser, "User created successfully", 201)
+}
+
+export const logIn = async (req: Request, res: Response) => {
+    const { email, password } = req.body
+
+    const loginUser = await userLoginService({
+        email,
+        password,
+    })
+
+    return successResponse(res, loginUser, "User login successfully", 200)
 }

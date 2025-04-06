@@ -7,6 +7,7 @@ export async function ensureTablesExist() {
     await db.execute(`
     CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
+      nano_id VARCHAR(21) NOT NULL UNIQUE,
       name VARCHAR(100) NOT NULL,
       email VARCHAR(150) UNIQUE NOT NULL,
       password VARCHAR(255),

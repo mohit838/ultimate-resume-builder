@@ -1,18 +1,27 @@
 import Database from "@/config/dbConfig"
 import { ISignUp, IUser } from "@/models/auth.model"
 import { ResultSetHeader, RowDataPacket } from "mysql2"
+import { customAlphabet } from "nanoid"
 
 interface UserRow extends IUser, RowDataPacket {}
 
-export const signUp = async (input: ISignUp): Promise<number> => {
+const nanoid = customAlphabet("1234567890abcdef", 21)
+
+export const signUp = async (input: ISignUp): Promise<string> => {
+    const nanoId = nanoid()
+
     const db = await Database.getInstance()
 
     const [result] = await db.execute<ResultSetHeader>(
-        "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-        [input.name, input.email, input.password]
+        "INSERT INTO users (nano_id, name, email, password) VALUES (?, ?, ?, ?)",
+        [nanoId, input.name, input.email, input.password]
     )
 
-    return result.insertId
+    if (result.affectedRows === 0) {
+        throw new Error("User could not be created.")
+    }
+
+    return nanoId
 }
 
 export const findUserByEmail = async (

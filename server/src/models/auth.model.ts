@@ -1,6 +1,7 @@
 // Database level interface
 export interface IUser {
-    id: number
+    id: string // for internal use (int will be faster)
+    nano_id: string // for frontend level (for not guessing)
     name: string
     email: string
     password: string

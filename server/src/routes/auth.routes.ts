@@ -1,6 +1,11 @@
-import { logIn, signUp } from "@/controllers/auth.controller"
+import {
+    logIn,
+    logout,
+    refreshToken,
+    signUp,
+} from "@/controllers/auth.controller"
 import { asyncHandler } from "@/helper/hof"
-import { blockIfAuthenticated } from "@/middlewares/authGuard"
+import { blockIfAuthenticated, requireAuth } from "@/middlewares/authGuard"
 import {
     loginSchema,
     signUpSchema,
@@ -23,5 +28,7 @@ router
         validate(loginSchema),
         asyncHandler(logIn)
     )
+    .post("/logout", requireAuth, asyncHandler(logout))
+    .post("/refresh", requireAuth, asyncHandler(refreshToken))
 
 export default router

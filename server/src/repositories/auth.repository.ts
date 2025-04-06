@@ -1,19 +1,8 @@
 import Database from "@/config/dbConfig"
-import { ISignUp } from "@/models/auth.model"
+import { ISignUp, IUser } from "@/models/auth.model"
 import { ResultSetHeader, RowDataPacket } from "mysql2"
 
-interface UserRow extends RowDataPacket {
-    id: number
-    name: string
-    email: string
-    password: string
-    google_auth_enabled: number
-    email_verified: number
-    otp_code: string | null
-    otp_expires_at: Date | null
-    created_at: Date
-    updated_at: Date
-}
+interface UserRow extends IUser, RowDataPacket {}
 
 export const signUp = async (input: ISignUp): Promise<number> => {
     const db = await Database.getInstance()

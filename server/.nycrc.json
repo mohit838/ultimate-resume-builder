@@ -1,6 +1,0 @@
-{
-    "include": ["src/**/*.ts"],
-    "exclude": ["**/*.test.ts", "**/*.spec.ts", "node_modules"],
-    "reporter": ["html", "text", "lcov"],
-    "all": true
-}

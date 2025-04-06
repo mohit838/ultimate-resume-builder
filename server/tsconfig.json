@@ -1,25 +1,30 @@
 {
-  "compilerOptions": {
-    "target": "ESNext", 
-    "lib": ["ES6"],
-    "module": "CommonJS", 
-    "moduleResolution": "node", 
-    "outDir": "./dist", 
-    "rootDir": "./src", 
-    "strict": true, 
-    "esModuleInterop": true, 
-    "forceConsistentCasingInFileNames": true, 
-    "skipLibCheck": true,
-    "resolveJsonModule": true, 
-    "sourceMap": true,
-    "typeRoots": ["./src/types", "./node_modules/@types"],
-    "allowSyntheticDefaultImports": true, 
-    "types": ["node", "express"],
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": ["./*"]
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": ["ES6"],
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "outDir": "./dist",
+        "rootDir": ".",
+        "strict": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "typeRoots": ["./src/types", "./node_modules/@types"],
+        "allowSyntheticDefaultImports": true,
+        "types": ["node", "express", "jest"],
+        "baseUrl": "./src",
+        "paths": {
+            "@/*": ["./*"]
+        }
     },
-  },
-  "include": ["src/**/*.ts", "src/types/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "logs"]
+    "include": [
+        "src/**/*.ts",
+        "src/types/**/*.d.ts",
+        "tests/**/*.ts",
+        "jest.config.ts"
+    ],
+    "exclude": ["node_modules", "dist", "logs"]
 }

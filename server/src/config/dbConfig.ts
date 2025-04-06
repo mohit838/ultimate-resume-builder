@@ -1,5 +1,5 @@
-import { DB_CONFIG } from "@/config/AppConstant"
 import mysql, { Pool } from "mysql2/promise"
+import { DB_CONFIG } from "../config/AppConstant"
 
 class Database {
     private static instance: Pool

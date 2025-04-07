@@ -42,3 +42,10 @@ export const findUserByEmail = async (
 
     return rows.length ? rows[0] : null
 }
+
+export const markEmailVerified = async (email: string) => {
+    const db = await Database.getInstance()
+    await db.execute("UPDATE users SET email_verified = true WHERE email = ?", [
+        email,
+    ])
+}

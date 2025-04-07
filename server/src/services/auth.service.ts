@@ -1,7 +1,14 @@
+import redisClient from "@/config/redisClient"
 import { CustomError } from "@/errors/CustomError"
 import { ILogin, ISignUp } from "@/models/auth.model"
 import * as repo from "@/repositories/auth.repository"
-import { createAccessToken, createRefreshToken } from "@/utils/jwt"
+import {
+    createAccessToken,
+    createRefreshToken,
+    verifyAccessToken,
+    verifyRefreshToken,
+} from "@/utils/jwt"
+import { generateOTP } from "@/utils/otp"
 import bcrypt from "bcrypt"
 
 export const createSignUpService = async (data: ISignUp) => {
@@ -11,23 +18,23 @@ export const createSignUpService = async (data: ISignUp) => {
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10)
-
     const nanoId = await repo.signUp({
         name: data.name,
         email: data.email,
         password: hashedPassword,
     })
 
-    const accessToken = createAccessToken({ id: nanoId, email: data.email })
-    const refreshToken = createRefreshToken({ id: nanoId, email: data.email })
+    const otp = generateOTP()
+    await redisClient.set(`otp_${data.email}`, otp, { EX: 180 }) // 3 mins
+
+    // Send OTP to email (mock or integrate nodemailer here)
+    console.log(`OTP for ${data.email}: ${otp}`) // Replace with nodemailer later
 
     return {
-        accessToken,
-        refreshToken,
         id: nanoId,
         name: data.name,
         email: data.email,
-        role: "user",
+        message: "OTP sent to email. Please verify to complete registration.",
     }
 }
 
@@ -61,5 +68,102 @@ export const userLoginService = async (data: ILogin) => {
         role: user.role,
         emailVerified: !!user.email_verified,
         googleAuthEnabled: !!user.google_auth_enabled,
+    }
+}
+
+export const userRefreshTokenService = async (
+    refreshToken: string | string[] | undefined
+) => {
+    if (!refreshToken || typeof refreshToken !== "string") {
+        throw new CustomError("Refresh token missing or corrupted", 400)
+    }
+
+    const decoded = verifyRefreshToken(refreshToken)
+
+    // create new tokens
+    const newAccessToken = createAccessToken({
+        id: decoded.id,
+        email: decoded.email,
+    })
+    const newRefreshToken = createRefreshToken({
+        id: decoded.id,
+        email: decoded.email,
+    })
+
+    return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+    }
+}
+
+export const userLogOutService = async (authHeader: string | undefined) => {
+    if (!authHeader) throw new CustomError("No token provided", 400)
+
+    if (typeof authHeader !== "string")
+        throw new CustomError("Token corrupted", 400)
+
+    const token = authHeader.split(" ")[1]
+    const decoded = verifyAccessToken(token)
+
+    if (!decoded.exp) {
+        throw new CustomError("Invalid token: missing expiration", 400)
+    }
+
+    const expiresIn = decoded.exp - Math.floor(Date.now() / 1000) // seconds
+
+    const blacklistToken = await redisClient.set(`bl_${token}`, "1", {
+        EX: expiresIn,
+    })
+
+    return blacklistToken ? true : false
+}
+
+export const userVerifyOtpService = async ({
+    email,
+    otp,
+}: {
+    email: string
+    otp: number
+}) => {
+    if (!email || !otp) {
+        throw new CustomError("Email and OTP required", 400)
+    }
+
+    const storedOtp = await redisClient.get(`otp_${email}`)
+
+    if (!storedOtp) {
+        throw new CustomError("OTP expired or not found", 400)
+    }
+
+    if (Number(storedOtp) !== otp) {
+        throw new CustomError("Invalid OTP", 401)
+    }
+
+    // Find user
+    const user = await repo.findUserByEmail(email)
+    if (!user) {
+        throw new CustomError("User not found", 404)
+    }
+
+    // Mark verified
+    await repo.markEmailVerified(email)
+    await redisClient.del(`otp_${email}`)
+
+    const accessToken = createAccessToken({
+        id: user.nano_id,
+        email: user.email,
+    })
+    const refreshToken = createRefreshToken({
+        id: user.nano_id,
+        email: user.email,
+    })
+
+    return {
+        accessToken,
+        refreshToken,
+        id: user.nano_id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
     }
 }

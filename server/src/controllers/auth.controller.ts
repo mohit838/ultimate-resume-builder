@@ -1,15 +1,14 @@
-import redisClient from "@/config/redisClient"
-import { CustomError } from "@/errors/CustomError"
 import { successResponse } from "@/helper/ApiResponse"
-import { createSignUpService, userLoginService } from "@/services/auth.service"
 import {
-    createAccessToken,
-    createRefreshToken,
-    verifyAccessToken,
-    verifyRefreshToken,
-} from "@/utils/jwt"
+    createSignUpService,
+    userLoginService,
+    userLogOutService,
+    userRefreshTokenService,
+    userVerifyOtpService,
+} from "@/services/auth.service"
 import { Request, Response } from "express"
 
+// 1. signup
 export const signUp = async (req: Request, res: Response) => {
     const { username, email, password } = req.body
 
@@ -22,6 +21,7 @@ export const signUp = async (req: Request, res: Response) => {
     return successResponse(res, newUser, "User created successfully", 201)
 }
 
+// 2. login
 export const logIn = async (req: Request, res: Response) => {
     const { email, password } = req.body
 
@@ -33,50 +33,39 @@ export const logIn = async (req: Request, res: Response) => {
     return successResponse(res, loginUser, "User login successfully", 200)
 }
 
+// 3. refresh token generations
 export const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.headers["x-refresh-token"]
 
-    if (!refreshToken || typeof refreshToken !== "string") {
-        throw new CustomError("Refresh token missing", 400)
-    }
+    const refreshTokenGenerate = await userRefreshTokenService(refreshToken)
 
-    const decoded = verifyRefreshToken(refreshToken)
+    return successResponse(res, refreshTokenGenerate, "Token refreshed", 200)
+}
 
-    // create new tokens
-    const newAccessToken = createAccessToken({
-        id: decoded.id,
-        email: decoded.email,
-    })
-    const newRefreshToken = createRefreshToken({
-        id: decoded.id,
-        email: decoded.email,
-    })
+// 4. logout
+export const logout = async (req: Request, res: Response) => {
+    const authHeader = req.headers.authorization
+
+    const logoutUser = await userLogOutService(authHeader)
 
     return successResponse(
         res,
-        {
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
-        },
-        "Token refreshed",
+        null,
+        logoutUser ? "Logged out successfully" : "Facing issues!!",
         200
     )
 }
 
-export const logout = async (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization
-    if (!authHeader) throw new CustomError("No token provided", 400)
+// 5. otp verifications
+export const verifyOtp = async (req: Request, res: Response) => {
+    const { email, otp } = req.body
 
-    const token = authHeader.split(" ")[1]
-    const decoded = verifyAccessToken(token)
+    const getLoginInfoAfterVerify = await userVerifyOtpService({ email, otp })
 
-    if (!decoded.exp) {
-        throw new CustomError("Invalid token: missing expiration", 400)
-    }
-
-    const expiresIn = decoded.exp - Math.floor(Date.now() / 1000) // seconds
-
-    await redisClient.set(`bl_${token}`, "1", { EX: expiresIn })
-
-    return successResponse(res, null, "Logged out successfully", 200)
+    return successResponse(
+        res,
+        getLoginInfoAfterVerify,
+        "OTP verified successfully",
+        200
+    )
 }

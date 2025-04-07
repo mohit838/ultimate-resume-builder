@@ -3,6 +3,7 @@ import {
     logout,
     refreshToken,
     signUp,
+    verifyOtp,
 } from "@/controllers/auth.controller"
 import { asyncHandler } from "@/helper/hof"
 import { blockIfAuthenticated, requireAuth } from "@/middlewares/authGuard"
@@ -30,5 +31,6 @@ router
     )
     .post("/logout", requireAuth, asyncHandler(logout))
     .post("/refresh", requireAuth, asyncHandler(refreshToken))
+    .post("/", asyncHandler(verifyOtp))
 
 export default router

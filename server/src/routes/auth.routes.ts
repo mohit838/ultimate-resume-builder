@@ -32,5 +32,6 @@ router
     .post("/logout", requireAuth, asyncHandler(logout))
     .post("/refresh", requireAuth, asyncHandler(refreshToken))
     .post("/otp", asyncHandler(verifyOtp))
+//TODO:: resend otp
 
 export default router

@@ -1,13 +1,11 @@
 import Database from "@/config/dbConfig"
 import { ISignUp, IUser } from "@/models/auth.model"
+import { nanoid } from "@/utils/nanoIdGenereate"
 import { ResultSetHeader, RowDataPacket } from "mysql2"
-import { customAlphabet } from "nanoid"
 
 interface UserRow extends IUser, RowDataPacket {
     role: string
 }
-
-const nanoid = customAlphabet("1234567890abcdef", 21)
 
 export const signUp = async (input: ISignUp): Promise<string> => {
     const nanoId = nanoid()

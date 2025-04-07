@@ -43,3 +43,5 @@ coverage/
 .env.development
 
 .nyc_output
+
+/redis-data/

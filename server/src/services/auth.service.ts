@@ -27,6 +27,7 @@ export const createSignUpService = async (data: ISignUp) => {
         id: nanoId,
         name: data.name,
         email: data.email,
+        role: "user",
     }
 }
 
@@ -57,6 +58,7 @@ export const userLoginService = async (data: ILogin) => {
         id: user.nano_id,
         name: user.name,
         email: user.email,
+        role: user.role,
         emailVerified: !!user.email_verified,
         googleAuthEnabled: !!user.google_auth_enabled,
     }

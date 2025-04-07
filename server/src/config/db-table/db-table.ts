@@ -3,6 +3,15 @@ import Database from "../dbConfig"
 export async function ensureTablesExist() {
     const db = await Database.getInstance()
 
+    // 0. Role table
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS roles (
+      id INT PRIMARY KEY,
+      name VARCHAR(50) UNIQUE NOT NULL,
+      description TEXT
+    )
+  `)
+
     // 1. Users Table
     await db.execute(`
     CREATE TABLE IF NOT EXISTS users (
@@ -11,6 +20,7 @@ export async function ensureTablesExist() {
       name VARCHAR(100) NOT NULL,
       email VARCHAR(150) UNIQUE NOT NULL,
       password VARCHAR(255),
+      role_id INT DEFAULT 1001,
       google_auth_enabled BOOLEAN DEFAULT FALSE,
       email_verified BOOLEAN DEFAULT FALSE,
       otp_code VARCHAR(10),
@@ -105,6 +115,14 @@ export async function ensureTablesExist() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `)
+
+    // 8. Run default role table
+    await db.execute(`
+    INSERT INTO roles (id, name, description) VALUES
+    (1001, 'user', 'Regular registered user'),
+    (1002, 'superadmin', 'Has all privileges'),
+    (1005, 'admin', 'Can manage content & users')
+    `)
 
     console.log("✅ All tables checked/created with OTP + Google Auth")
 }

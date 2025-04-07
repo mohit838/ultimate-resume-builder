@@ -16,6 +16,7 @@ describe("POST /api/auth/signup", () => {
         expect(res.body).toHaveProperty("model")
         expect(res.body.model).toHaveProperty("id")
         expect(res.body.model).toHaveProperty("email", testEmail)
+        expect(res.body.model).toHaveProperty("role", "user")
     })
 
     it("should return 400 if validation fails", async () => {

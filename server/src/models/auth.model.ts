@@ -1,10 +1,11 @@
 // Database level interface
 export interface IUser {
-    id: string // for internal use (int will be faster)
-    nano_id: string // for frontend level (for not guessing)
+    id: string // db internal
+    nano_id: string // frontend/public identifier
     name: string
     email: string
     password: string
+    role: string // now from joined roles table
     google_auth_enabled: boolean
     email_verified: boolean
     created_at: Date

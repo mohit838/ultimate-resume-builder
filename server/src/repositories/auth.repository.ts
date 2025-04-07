@@ -3,18 +3,21 @@ import { ISignUp, IUser } from "@/models/auth.model"
 import { ResultSetHeader, RowDataPacket } from "mysql2"
 import { customAlphabet } from "nanoid"
 
-interface UserRow extends IUser, RowDataPacket {}
+interface UserRow extends IUser, RowDataPacket {
+    role: string
+}
 
 const nanoid = customAlphabet("1234567890abcdef", 21)
 
 export const signUp = async (input: ISignUp): Promise<string> => {
     const nanoId = nanoid()
+    const roleId = 1001 // Default to user
 
     const db = await Database.getInstance()
 
     const [result] = await db.execute<ResultSetHeader>(
-        "INSERT INTO users (nano_id, name, email, password) VALUES (?, ?, ?, ?)",
-        [nanoId, input.name, input.email, input.password]
+        "INSERT INTO users (nano_id, name, email, password, role_id) VALUES (?, ?, ?, ?, ?)",
+        [nanoId, input.name, input.email, input.password, roleId]
     )
 
     if (result.affectedRows === 0) {
@@ -30,7 +33,10 @@ export const findUserByEmail = async (
     const db = await Database.getInstance()
 
     const [rows] = await db.execute<UserRow[]>(
-        "SELECT * FROM users WHERE email = ?",
+        `SELECT u.*, r.name as role 
+         FROM users u
+         JOIN roles r ON u.role_id = r.id
+         WHERE u.email = ?`,
         [email]
     )
 

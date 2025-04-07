@@ -24,7 +24,7 @@ export interface IOtpVerification {
     otp_expires_at: Date
 }
 
-export interface ILogin {
+export interface ILoginPayload {
     email: string
     password: string
 }

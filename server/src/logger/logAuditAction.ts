@@ -13,7 +13,7 @@ export function logAuditAction(
     target: string,
     metadata: Record<string, any> = {}
 ) {
-    logger.info("Audit Log", {
+    logger.log("audit", "Audit Log", {
         meta: {
             type: "audit",
             userId,

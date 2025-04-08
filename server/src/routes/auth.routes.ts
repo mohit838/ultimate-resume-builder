@@ -33,6 +33,6 @@ router
     .post("/logout", requireAuth, asyncHandler(logout))
     .post("/refresh", requireAuth, asyncHandler(refreshToken))
     .post("/otp", asyncHandler(verifyOtp))
-    .post("/request-otp", asyncHandler(requestOtp))
+    .post("/resend-otp", asyncHandler(requestOtp))
 
 export default router

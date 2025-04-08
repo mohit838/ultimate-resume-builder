@@ -1,6 +1,7 @@
 import { successResponse } from "@/helper/ApiResponse"
 import {
     createSignUpService,
+    userAgainRequestOtpService,
     userLoginService,
     userLogOutService,
     userRefreshTokenService,
@@ -58,6 +59,20 @@ export const verifyOtp = async (req: Request, res: Response) => {
     const { email, otp } = req.body
 
     const getLoginInfoAfterVerify = await userVerifyOtpService({ email, otp })
+
+    return successResponse(
+        res,
+        getLoginInfoAfterVerify,
+        "OTP verified successfully",
+        200
+    )
+}
+
+// 6. request otp
+export const requestOtp = async (req: Request, res: Response) => {
+    const { email } = req.body
+
+    const getLoginInfoAfterVerify = await userAgainRequestOtpService({ email })
 
     return successResponse(
         res,

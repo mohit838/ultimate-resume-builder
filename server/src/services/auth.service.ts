@@ -187,3 +187,36 @@ export const userVerifyOtpService = async ({
         role: user.role,
     }
 }
+
+export const userAgainRequestOtpService = async ({
+    email,
+}: {
+    email: string
+}) => {
+    if (!email) {
+        throw new CustomError("Email not found!", 404)
+    }
+
+    const existingUser = await repo.findUserByEmail(email)
+
+    if (existingUser) {
+        const otp = generateOTP()
+
+        await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 180 }) // 3 mins
+
+        // Send OTP to email
+        const sendEmailSuccessfully = await sendOtpEmail(
+            existingUser.email,
+            otp
+        )
+
+        if (sendEmailSuccessfully) {
+            return {
+                message:
+                    "OTP sent to email. Please verify to complete registration.",
+            }
+        }
+    } else {
+        throw new CustomError("Cant send otp to your mail!")
+    }
+}

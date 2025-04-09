@@ -73,10 +73,12 @@ export const userLoginService = async (data: ILoginPayload, req: Request) => {
     const accessToken = createAccessToken({
         id: user.nano_id,
         email: user.email,
+        role: user.role,
     })
     const refreshToken = createRefreshToken({
         id: user.nano_id,
         email: user.email,
+        role: user.role,
     })
 
     return {
@@ -104,10 +106,12 @@ export const userRefreshTokenService = async (
     const newAccessToken = createAccessToken({
         id: decoded.id,
         email: decoded.email,
+        role: decoded.role,
     })
     const newRefreshToken = createRefreshToken({
         id: decoded.id,
         email: decoded.email,
+        role: decoded.role,
     })
 
     return {
@@ -172,10 +176,12 @@ export const userVerifyOtpService = async ({
     const accessToken = createAccessToken({
         id: user.nano_id,
         email: user.email,
+        role: user.role,
     })
     const refreshToken = createRefreshToken({
         id: user.nano_id,
         email: user.email,
+        role: user.role,
     })
 
     return {

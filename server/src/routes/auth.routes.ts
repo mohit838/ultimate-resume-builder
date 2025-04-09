@@ -8,6 +8,7 @@ import {
 } from "@/controllers/auth.controller"
 import { asyncHandler } from "@/helper/hof"
 import { blockIfAuthenticated, requireAuth } from "@/middlewares/authGuard"
+import { authorizeRoles } from "@/middlewares/roleGuard"
 import {
     loginSchema,
     signUpSchema,
@@ -32,7 +33,8 @@ router
     )
     .post("/logout", requireAuth, asyncHandler(logout))
     .post("/refresh", requireAuth, asyncHandler(refreshToken))
-    .post("/otp", asyncHandler(verifyOtp))
-    .post("/resend-otp", asyncHandler(requestOtp))
+    .post("/otp", blockIfAuthenticated, asyncHandler(verifyOtp))
+    .post("/resend-otp", blockIfAuthenticated, asyncHandler(requestOtp))
+    .get("/admin-only", authorizeRoles("admin", "superadmin")) // Role test route # Delete if you want
 
 export default router

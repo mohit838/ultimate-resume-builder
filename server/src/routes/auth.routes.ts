@@ -1,10 +1,12 @@
 import {
+    generate2FA,
     logIn,
     logout,
     refreshToken,
     requestOtp,
     signUp,
     testRoleBase,
+    verifyGoogle2FA,
     verifyOtp,
 } from "@/controllers/auth.controller"
 import { asyncHandler } from "@/helper/hof"
@@ -43,5 +45,9 @@ router
         authorizeRoles("user", "admin", "superadmin"),
         asyncHandler(testRoleBase)
     )
+
+// 2FA system
+router.post("/enable-2fa", requireAuth, asyncHandler(generate2FA))
+router.post("/verify-2fa", requireAuth, asyncHandler(verifyGoogle2FA))
 
 export default router

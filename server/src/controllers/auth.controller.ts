@@ -1,11 +1,14 @@
+import { CustomError } from "@/errors/CustomError"
 import { successResponse } from "@/helper/ApiResponse"
 import {
     createSignUpService,
+    generate2FAService,
     userAgainRequestOtpService,
     userLoginService,
     userLogOutService,
     userRefreshTokenService,
     userVerifyOtpService,
+    verifyGoogle2FAService,
 } from "@/services/auth.service"
 import { Request, Response } from "express"
 
@@ -85,4 +88,32 @@ export const requestOtp = async (req: Request, res: Response) => {
 // 7. test role base auth
 export const testRoleBase = async (req: Request, res: Response) => {
     return successResponse(res, null, "Role test successfull!", 200)
+}
+
+// 8. 2FA - Generate
+export const generate2FA = async (req: Request, res: Response) => {
+    const userEmail = req?.user?.email
+    if (!userEmail) throw new CustomError("User does not exist!", 400)
+
+    const qrCodeDataUrl = await generate2FAService(userEmail)
+
+    return successResponse(
+        res,
+        { qrCode: qrCodeDataUrl },
+        "Scan QR to enable 2FA"
+    )
+}
+
+// 9. 2FA - Verify
+export const verifyGoogle2FA = async (req: Request, res: Response) => {
+    const { token } = req.body
+    const email = req?.user?.email
+
+    if (!email || !token) {
+        throw new CustomError("Email and token are required", 400)
+    }
+
+    await verifyGoogle2FAService(email, token)
+
+    return successResponse(res, null, "2FA verification successful", 200)
 }

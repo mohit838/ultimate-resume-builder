@@ -12,6 +12,8 @@ import {
 import { generateOTP } from "@/utils/otp"
 import bcrypt from "bcrypt"
 import { Request } from "express"
+import qrcode from "qrcode"
+import speakeasy from "speakeasy"
 import { sendOtpEmail } from "./otp.service"
 
 export const createSignUpService = async (data: ISignUp) => {
@@ -230,4 +232,45 @@ export const userAgainRequestOtpService = async ({
     } else {
         throw new CustomError("Cant send otp to your mail!")
     }
+}
+
+export const generate2FAService = async (
+    email: string
+): Promise<{ qrCode: string; secret: string }> => {
+    // 0.0 Promise<string>
+    const secret = speakeasy.generateSecret({
+        name: `Ultimate Resume (${email})`,
+    })
+
+    if (!secret.otpauth_url) {
+        throw new CustomError("Failed to generate QR code", 500)
+    }
+
+    await repo.saveGoogleAuthSecret(email, secret.base32)
+
+    // 0.1 return await qrcode.toDataURL(secret.otpauth_url)
+    return {
+        qrCode: await qrcode.toDataURL(secret.otpauth_url),
+        secret: secret.base32,
+    }
+}
+
+export const verifyGoogle2FAService = async (email: string, token: string) => {
+    const user = await repo.findUserByEmail(email)
+    if (!user || !user.google_auth_secret) {
+        throw new CustomError("2FA not set up", 400)
+    }
+
+    const isValid = speakeasy.totp.verify({
+        secret: user.google_auth_secret,
+        encoding: "base32",
+        token,
+        window: 1,
+    })
+
+    if (!isValid) {
+        throw new CustomError("Invalid 2FA code", 401)
+    }
+
+    return true
 }

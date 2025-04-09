@@ -5,7 +5,8 @@ export interface IUser {
     name: string
     email: string
     password: string
-    role: string // now from joined roles table
+    role: string
+    google_auth_secret?: string
     google_auth_enabled: boolean
     email_verified: boolean
     created_at: Date

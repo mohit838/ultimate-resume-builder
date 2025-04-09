@@ -47,3 +47,14 @@ export const markEmailVerified = async (email: string) => {
         email,
     ])
 }
+
+export const saveGoogleAuthSecret = async (
+    email: string,
+    secret: string
+): Promise<void> => {
+    const db = await Database.getInstance()
+    await db.execute(
+        "UPDATE users SET google_auth_secret = ?, google_auth_enabled = true WHERE email = ?",
+        [secret, email]
+    )
+}

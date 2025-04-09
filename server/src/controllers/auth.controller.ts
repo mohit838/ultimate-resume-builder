@@ -81,3 +81,8 @@ export const requestOtp = async (req: Request, res: Response) => {
         200
     )
 }
+
+// 7. test role base auth
+export const testRoleBase = async (req: Request, res: Response) => {
+    return successResponse(res, null, "Role test successfull!", 200)
+}

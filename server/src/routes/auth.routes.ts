@@ -4,6 +4,7 @@ import {
     refreshToken,
     requestOtp,
     signUp,
+    testRoleBase,
     verifyOtp,
 } from "@/controllers/auth.controller"
 import { asyncHandler } from "@/helper/hof"
@@ -35,6 +36,12 @@ router
     .post("/refresh", requireAuth, asyncHandler(refreshToken))
     .post("/otp", blockIfAuthenticated, asyncHandler(verifyOtp))
     .post("/resend-otp", blockIfAuthenticated, asyncHandler(requestOtp))
-    .get("/admin-only", authorizeRoles("admin", "superadmin")) // Role test route # Delete if you want
+    // Role test route # Delete if you want
+    .get(
+        "/admin-only",
+        requireAuth,
+        authorizeRoles("user", "admin", "superadmin"),
+        asyncHandler(testRoleBase)
+    )
 
 export default router

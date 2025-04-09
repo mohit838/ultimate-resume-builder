@@ -200,6 +200,11 @@ export const userAgainRequestOtpService = async ({
     const existingUser = await repo.findUserByEmail(email)
 
     if (existingUser) {
+        // if user already verified
+        if (existingUser.email_verified) {
+            throw new CustomError("Email already verified!", 401)
+        }
+
         const otp = generateOTP()
 
         await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 180 }) // 3 mins

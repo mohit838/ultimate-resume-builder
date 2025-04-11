@@ -14,21 +14,22 @@ export async function ensureTablesExist() {
 
     // 1. Users Table
     await db.execute(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      nano_id VARCHAR(21) NOT NULL UNIQUE,
-      name VARCHAR(100) NOT NULL,
-      email VARCHAR(150) UNIQUE NOT NULL,
-      password VARCHAR(255),
-      role_id INT DEFAULT 1001,
-      google_auth_enabled BOOLEAN DEFAULT FALSE,
-      email_verified BOOLEAN DEFAULT FALSE,
-      otp_code VARCHAR(10),
-      otp_expires_at DATETIME,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )
-  `)
+      CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nano_id VARCHAR(21) NOT NULL UNIQUE,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(150) UNIQUE NOT NULL,
+        password VARCHAR(255),
+        role_id INT DEFAULT 1001,
+        google_auth_secret VARCHAR(255),
+        google_auth_enabled BOOLEAN DEFAULT FALSE,
+        email_verified BOOLEAN DEFAULT FALSE,
+        otp_code VARCHAR(10),
+        otp_expires_at DATETIME,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+      `)
 
     // 2. Resumes Table
     await db.execute(`

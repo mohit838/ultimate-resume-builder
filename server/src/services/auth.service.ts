@@ -274,3 +274,63 @@ export const verifyGoogle2FAService = async (email: string, token: string) => {
 
     return true
 }
+
+export const requestOtpForForgotPasswordService = async (email: string) => {
+    if (!email) {
+        throw new CustomError("Email not found!", 404)
+    }
+
+    const existingUser = await repo.findUserByEmail(email)
+
+    if (existingUser) {
+        // if user already verified then mark unverified if call this service
+        if (existingUser.email_verified) {
+            // Mark as unverified
+            await repo.markEmailNotVerified(email)
+        }
+
+        const otp = generateOTP()
+
+        await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 180 }) // 3 mins
+
+        // Send OTP to email
+        const sendEmailSuccessfully = await sendOtpEmail(
+            existingUser.email,
+            otp
+        )
+
+        if (sendEmailSuccessfully) {
+            return {
+                message:
+                    "OTP sent to email. Please verify to complete registration.",
+            }
+        }
+    } else {
+        throw new CustomError("Cant send otp to your mail!")
+    }
+}
+
+export const requestForResetPasswordService = async (
+    email: string,
+    password: string,
+    confirmPassword: string
+) => {
+    if (!email || password !== confirmPassword) {
+        // Use decoy message for hacker protections
+        throw new CustomError("Email or password not found!", 404)
+    }
+
+    const existingUser = await repo.findUserByEmail(email)
+
+    if (existingUser) {
+        if (existingUser.email_verified) {
+            const hashedPassword = await bcrypt.hash(password, 10)
+
+            await repo.setNewPasswordAfterReset(email, hashedPassword)
+
+            return true
+        }
+    } else {
+        throw new CustomError("Error while reseting password!")
+    }
+}

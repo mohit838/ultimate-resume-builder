@@ -48,6 +48,14 @@ export const markEmailVerified = async (email: string) => {
     ])
 }
 
+export const markEmailNotVerified = async (email: string) => {
+    const db = await Database.getInstance()
+    await db.execute(
+        "UPDATE users SET email_verified = false WHERE email = ?",
+        [email]
+    )
+}
+
 export const saveGoogleAuthSecret = async (
     email: string,
     secret: string
@@ -57,4 +65,15 @@ export const saveGoogleAuthSecret = async (
         "UPDATE users SET google_auth_secret = ?, google_auth_enabled = true WHERE email = ?",
         [secret, email]
     )
+}
+
+export const setNewPasswordAfterReset = async (
+    email: string,
+    hashedPassword: string
+) => {
+    const db = await Database.getInstance()
+    await db.execute("UPDATE users SET password = ? WHERE email = ?", [
+        hashedPassword,
+        email,
+    ])
 }

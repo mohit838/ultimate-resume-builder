@@ -1,3 +1,4 @@
+import api from "@/api/axiosInstance";
 import useAuthStore from "@/store/auth-store";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Card, Form, Input, Typography, message } from "antd";
@@ -11,20 +12,31 @@ const LoginPage = () => {
 
   const handleSubmit = async (values: { email: string; password: string }) => {
     try {
-      console.log("Login input:", values);
+      const response = await api.post("/auth/login", values);
 
-      // Replace with actual API call here
-      const token = "dummy-token";
-      const user = {
-        id: "user123",
-        name: "John Doe",
-        email: values.email,
-        role: "user",
-        emailVerified: true,
-        googleAuthEnabled: false,
-      };
+      const {
+        accessToken,
+        refreshToken,
+        id,
+        name,
+        email,
+        role,
+        emailVerified,
+        googleAuthEnabled,
+      } = response.data.model;
 
-      login(token, user);
+      // Save refresh token in localStorage
+      localStorage.setItem("refresh_token", refreshToken);
+
+      // Call store login
+      login(accessToken, {
+        id,
+        name,
+        email,
+        role,
+        emailVerified,
+        googleAuthEnabled,
+      });
 
       message.success("Login successful!");
       navigate("/dashboard");

@@ -3,6 +3,8 @@ import { successResponse } from "@/helper/ApiResponse"
 import {
     createSignUpService,
     generate2FAService,
+    requestForResetPasswordService,
+    requestOtpForForgotPasswordService,
     userAgainRequestOtpService,
     userLoginService,
     userLogOutService,
@@ -116,4 +118,38 @@ export const verifyGoogle2FA = async (req: Request, res: Response) => {
     await verifyGoogle2FAService(email, token)
 
     return successResponse(res, null, "2FA verification successful", 200)
+}
+
+// 10. Reset password request
+export const requestResetPassword = async (req: Request, res: Response) => {
+    const { email, password, confirmPassword } = req.body
+
+    if (!email || password !== confirmPassword) {
+        throw new CustomError("Email and password are required", 400)
+    }
+
+    await requestForResetPasswordService(email, password, confirmPassword)
+
+    return successResponse(res, null, "Reset password sucessfully", 200)
+}
+
+// 11. Forgot password request
+export const requestOtpForForgotPassword = async (
+    req: Request,
+    res: Response
+) => {
+    const { email } = req.body
+
+    if (!email) {
+        throw new CustomError("Email is required", 400)
+    }
+
+    const forgotRequestMsg = await requestOtpForForgotPasswordService(email)
+
+    return successResponse(
+        res,
+        null,
+        forgotRequestMsg?.message ?? "Reset OTP sent sucessfully",
+        200
+    )
 }

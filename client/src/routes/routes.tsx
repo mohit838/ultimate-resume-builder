@@ -1,4 +1,8 @@
+import { ProtectedRoute } from "@/auth-helper/protected";
+import { PublicRoute } from "@/auth-helper/public";
 import LoginPage from "@/pages/auth/login";
+import LogoutHandler from "@/pages/auth/logout";
+import ResetPasswordPage from "@/pages/auth/reset-password";
 import SignupPage from "@/pages/auth/signup";
 import DashboardPage from "@/pages/dashboard/dashboard";
 import NotFoundPage from "@/pages/not-found/NotFound";
@@ -10,13 +14,78 @@ import { Navigate, useRoutes } from "react-router-dom";
 const ResumeRouters = () => {
   const routes = useRoutes([
     { path: "/", element: <Navigate to={"/dashboard"} /> },
-    { path: "/dashboard", element: <DashboardPage /> },
-    { path: "/resume", element: <ResumePage /> },
-    { path: "/login", element: <LoginPage /> },
-    { path: "/signup", element: <SignupPage /> },
-    { path: "/resume", element: <ResumePage /> },
-    { path: "/settings/profile", element: <ProfilePage /> },
-    { path: "/settings/enable-2fa", element: <Enable2faPage /> },
+    {
+      path: "/dashboard",
+      element: (
+        <ProtectedRoute>
+          <DashboardPage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/resume",
+      element: (
+        <ProtectedRoute>
+          <ResumePage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/resume",
+      element: (
+        <ProtectedRoute>
+          <ResumePage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/settings/profile",
+      element: (
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/settings/enable-2fa",
+      element: (
+        <ProtectedRoute>
+          <Enable2faPage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/logout",
+      element: (
+        <ProtectedRoute>
+          <LogoutHandler />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/login",
+      element: (
+        <PublicRoute>
+          <LoginPage />
+        </PublicRoute>
+      ),
+    },
+    {
+      path: "/signup",
+      element: (
+        <PublicRoute>
+          <SignupPage />
+        </PublicRoute>
+      ),
+    },
+    {
+      path: "/forgot-password",
+      element: (
+        <PublicRoute>
+          <ResetPasswordPage />
+        </PublicRoute>
+      ),
+    },
     // not-found routes
     { path: "*", element: <NotFoundPage /> },
   ]);

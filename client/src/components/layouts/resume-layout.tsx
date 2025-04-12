@@ -1,7 +1,6 @@
-import ResumeRouters from "@/routes/routes";
 import { AppstoreOutlined } from "@ant-design/icons";
 import { MenuDataItem, ProLayout } from "@ant-design/pro-components";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const menuItems: MenuDataItem[] = [
@@ -27,7 +26,7 @@ const menuItems: MenuDataItem[] = [
   },
 ];
 
-export const ResumeLayout = () => {
+export const ResumeLayout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -53,9 +52,7 @@ export const ResumeLayout = () => {
         <a onClick={() => item.path && navigate(item.path)}>{dom}</a>
       )}
     >
-      <div className="p-6">
-        <ResumeRouters />
-      </div>
+      <div className="p-6">{children}</div>
     </ProLayout>
   );
 };

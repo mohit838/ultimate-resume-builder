@@ -1,12 +1,7 @@
-import "./App.css";
-import { AntdMenu } from "./components/layouts/AntdMenu";
+import { ResumeLayout } from "./components/layouts/resume-layout";
 
-function App() {
-  return (
-    <>
-      <AntdMenu />
-    </>
-  );
-}
+const App = () => {
+  return <ResumeLayout />;
+};
 
 export default App;

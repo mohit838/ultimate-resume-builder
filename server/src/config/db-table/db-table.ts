@@ -12,29 +12,6 @@ export async function ensureTablesExist() {
     )
   `)
 
-    // 0.1 Rotues and Permissions
-    await db.execute(`
-    CREATE TABLE routes (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(100),
-      path VARCHAR(255) NOT NULL UNIQUE,
-      parent_id INT DEFAULT NULL,
-      icon VARCHAR(100),
-      is_protected BOOLEAN DEFAULT TRUE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-
-    CREATE TABLE user_route_permissions (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      user_id INT NOT NULL,
-      route_id INT NOT NULL,
-      granted BOOLEAN DEFAULT TRUE,
-      FOREIGN KEY (user_id) REFERENCES users(id),
-      FOREIGN KEY (route_id) REFERENCES routes(id),
-      UNIQUE (user_id, route_id)
-      );
-    `)
-
     // 1. Users Table
     await db.execute(`
       CREATE TABLE IF NOT EXISTS users (
@@ -144,7 +121,7 @@ export async function ensureTablesExist() {
     await db.execute(`
     INSERT INTO roles (id, name, description) VALUES
     (1001, 'user', 'Regular registered user'),
-    (1002, 'superadmin', 'Has all privileges'),
+    (0009, 'superadmin', 'Has all privileges'),
     (1005, 'admin', 'Can manage content & users')
     `)
 

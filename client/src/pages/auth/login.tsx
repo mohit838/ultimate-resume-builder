@@ -12,7 +12,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (values: { email: string; password: string }) => {
     try {
-      const response = await api.post("/auth/login", values);
+      const response = await api.post("auth/login", values);
 
       const {
         accessToken,

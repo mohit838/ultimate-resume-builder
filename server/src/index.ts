@@ -43,6 +43,7 @@ app.use(
 // Routes
 import authRoutes from "@/routes/auth.routes"
 import logRoutes from "@/routes/logs.routes"
+import { ensureTablesExist } from "./config/db-table/db-table"
 
 app.use("/api/auth", authRoutes)
 app.use("/api/logs", logRoutes)
@@ -74,7 +75,7 @@ async function initializeServer() {
         await Database.getInstance()
 
         // only execute for first time
-        // ensureTablesExist()
+        ensureTablesExist()
 
         app.listen(servicePort, () => {
             console.log(`${serviceName} is listening on port ${servicePort}`)

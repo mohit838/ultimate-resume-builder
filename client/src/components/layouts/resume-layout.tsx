@@ -1,7 +1,7 @@
 import { AppstoreOutlined } from "@ant-design/icons";
 import { MenuDataItem, ProLayout } from "@ant-design/pro-components";
 import { ReactNode, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const menuItems: MenuDataItem[] = [
   {
@@ -31,13 +31,13 @@ export const ResumeLayout = ({ children }: { children: ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   const logoWithText = (
-    <Link
-      to="/dashboard"
-      className="flex items-center gap-2 text-lg font-semibold no-underline text-current"
+    <span
+      onClick={() => navigate("/dashboard")}
+      className="flex items-center gap-2 text-lg font-semibold no-underline text-current cursor-pointer"
     >
       <AppstoreOutlined className="text-xl" />
       {!collapsed && <span className="transition-all">Ultimate Resume</span>}
-    </Link>
+    </span>
   );
 
   return (
@@ -49,7 +49,7 @@ export const ResumeLayout = ({ children }: { children: ReactNode }) => {
       logo={logoWithText}
       menuDataRender={() => menuItems}
       menuItemRender={(item, dom) => (
-        <a onClick={() => item.path && navigate(item.path)}>{dom}</a>
+        <span onClick={() => item.path && navigate(item.path)}>{dom}</span>
       )}
     >
       <div className="p-6">{children}</div>

@@ -12,90 +12,32 @@ import Enable2faPage from "@/pages/settings/enable-2fa/enable-2fa";
 import ProfilePage from "@/pages/settings/profile/profile";
 import { Navigate, useRoutes } from "react-router-dom";
 
+const protectedRoutes = [
+  { path: "/dashboard", element: <DashboardPage /> },
+  { path: "/resume", element: <ResumePage /> },
+  { path: "/settings/profile", element: <ProfilePage /> },
+  { path: "/settings/enable-2fa", element: <Enable2faPage /> },
+  { path: "/logout", element: <LogoutHandler /> },
+];
+
+const publicRoutes = [
+  { path: "/login", element: <LoginPage /> },
+  { path: "/signup", element: <SignupPage /> },
+  { path: "/forgot-password", element: <ResetPasswordPage /> },
+  { path: "/verify-otp", element: <OtpVerificationPage /> },
+];
+
 const ResumeRouters = () => {
   const routes = useRoutes([
-    { path: "/", element: <Navigate to={"/dashboard"} /> },
-    {
-      path: "/dashboard",
-      element: (
-        <ProtectedRoute>
-          <DashboardPage />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/resume",
-      element: (
-        <ProtectedRoute>
-          <ResumePage />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/resume",
-      element: (
-        <ProtectedRoute>
-          <ResumePage />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/settings/profile",
-      element: (
-        <ProtectedRoute>
-          <ProfilePage />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/settings/enable-2fa",
-      element: (
-        <ProtectedRoute>
-          <Enable2faPage />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/logout",
-      element: (
-        <ProtectedRoute>
-          <LogoutHandler />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/login",
-      element: (
-        <PublicRoute>
-          <LoginPage />
-        </PublicRoute>
-      ),
-    },
-    {
-      path: "/signup",
-      element: (
-        <PublicRoute>
-          <SignupPage />
-        </PublicRoute>
-      ),
-    },
-    {
-      path: "/forgot-password",
-      element: (
-        <PublicRoute>
-          <ResetPasswordPage />
-        </PublicRoute>
-      ),
-    },
-    {
-      path: "/verify-otp",
-      element: (
-        <PublicRoute>
-          <OtpVerificationPage />
-        </PublicRoute>
-      ),
-    },
-    // not-found routes
+    { path: "/", element: <Navigate to="/dashboard" /> },
+    ...protectedRoutes.map((r) => ({
+      path: r.path,
+      element: <ProtectedRoute>{r.element}</ProtectedRoute>,
+    })),
+    ...publicRoutes.map((r) => ({
+      path: r.path,
+      element: <PublicRoute>{r.element}</PublicRoute>,
+    })),
     { path: "*", element: <NotFoundPage /> },
   ]);
 

@@ -2,6 +2,7 @@ import { ProtectedRoute } from "@/auth-helper/protected";
 import { PublicRoute } from "@/auth-helper/public";
 import LoginPage from "@/pages/auth/login";
 import LogoutHandler from "@/pages/auth/logout";
+import OtpVerificationPage from "@/pages/auth/otp-verification-page";
 import ResetPasswordPage from "@/pages/auth/reset-password";
 import SignupPage from "@/pages/auth/signup";
 import DashboardPage from "@/pages/dashboard/dashboard";
@@ -83,6 +84,14 @@ const ResumeRouters = () => {
       element: (
         <PublicRoute>
           <ResetPasswordPage />
+        </PublicRoute>
+      ),
+    },
+    {
+      path: "/verify-otp",
+      element: (
+        <PublicRoute>
+          <OtpVerificationPage />
         </PublicRoute>
       ),
     },

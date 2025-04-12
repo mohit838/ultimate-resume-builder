@@ -30,7 +30,7 @@ const SignupPage = () => {
           <Title level={2} className="!mb-1">
             Ultimate Resume
           </Title>
-          <Text type="secondary">Please sign in to continue</Text>
+          <Text type="secondary">Create your account</Text>
         </div>
 
         <Form layout="vertical" onFinish={handleSubmit} requiredMark={false}>

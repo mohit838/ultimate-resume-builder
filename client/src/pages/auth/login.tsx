@@ -13,9 +13,18 @@ const LoginPage = () => {
     try {
       console.log("Login input:", values);
 
-      // Replace with actual API login
+      // Replace with actual API call here
       const token = "dummy-token";
-      login(token);
+      const user = {
+        id: "user123",
+        name: "John Doe",
+        email: values.email,
+        role: "user",
+        emailVerified: true,
+        googleAuthEnabled: false,
+      };
+
+      login(token, user);
 
       message.success("Login successful!");
       navigate("/dashboard");

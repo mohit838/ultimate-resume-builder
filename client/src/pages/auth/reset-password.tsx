@@ -23,10 +23,10 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
-      <Card className="w-full max-w-md shadow-lg">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 px-4">
+      <Card className="w-full max-w-md shadow-xl border-none rounded-lg">
         <div className="text-center mb-6">
-          <Title level={3}>Reset Your Password</Title>
+          <Title level={2}>Reset Your Password</Title>
           <Text type="secondary">Please enter a new password below</Text>
         </div>
 

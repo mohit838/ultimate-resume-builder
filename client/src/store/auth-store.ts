@@ -1,11 +1,21 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  emailVerified: boolean;
+  googleAuthEnabled: boolean;
+}
+
 interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
   isLoading: boolean;
-  login: (token: string) => void;
+  user: User | null;
+  login: (token: string, user: User) => void;
   logout: () => void;
   setLoading: (value: boolean) => void;
 }
@@ -15,9 +25,10 @@ const useAuthStore = create<AuthState>()(
     (set) => ({
       isAuthenticated: false,
       token: null,
+      user: null,
       isLoading: false,
-      login: (token) => set({ isAuthenticated: true, token }),
-      logout: () => set({ isAuthenticated: false, token: null }),
+      login: (token, user) => set({ isAuthenticated: true, token, user }),
+      logout: () => set({ isAuthenticated: false, token: null, user: null }),
       setLoading: (value) => set({ isLoading: value }),
     }),
     {

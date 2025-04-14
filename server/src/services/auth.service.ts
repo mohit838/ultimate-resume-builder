@@ -37,12 +37,20 @@ export const createSignUpService = async (data: ISignUp) => {
             email: data.email,
             password: hashedPassword,
         })
+
+        const ttl = await redisClient.ttl(`otp_${data.email}`)
+
+        if (!nanoId) {
+            throw new CustomError("Error while creating user!", 500)
+        }
+
         return {
             id: nanoId,
             name: data.name,
             email: data.email,
             message:
                 "OTP sent to email. Please verify to complete registration.",
+            ttl,
         }
     } else {
         throw new CustomError("Cant send otp to your mail!")
@@ -223,10 +231,13 @@ export const userAgainRequestOtpService = async ({
             otp
         )
 
+        const ttl = await redisClient.ttl(`otp_${email}`)
+
         if (sendEmailSuccessfully) {
             return {
                 message:
-                    "OTP sent to email. Please verify to complete registration.",
+                    "OTP sent to email. Please verify for further process.",
+                ttl,
             }
         }
     } else {
@@ -299,10 +310,13 @@ export const requestOtpForForgotPasswordService = async (email: string) => {
             otp
         )
 
+        const ttl = await redisClient.ttl(`otp_${email}`)
+
         if (sendEmailSuccessfully) {
             return {
                 message:
                     "OTP sent to email. Please verify to complete registration.",
+                ttl,
             }
         }
     } else {

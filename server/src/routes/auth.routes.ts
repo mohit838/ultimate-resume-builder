@@ -1,3 +1,16 @@
+import { asyncHandler } from "@/helper/hof"
+import { blockIfAuthenticated, requireAuth } from "@/middlewares/authGuard"
+import { authorizeRoles } from "@/middlewares/roleGuard"
+import {
+    forgotPassword,
+    loginSchema,
+    resetPassword,
+    signUpSchema,
+} from "@/middlewares/validations/auth.schema"
+import { validate } from "@/middlewares/validations/auth.validation"
+import express from "express"
+
+import redisClient from "@/config/redisClient"
 import {
     generate2FA,
     logIn,
@@ -11,37 +24,27 @@ import {
     verifyGoogle2FA,
     verifyOtp,
 } from "@/controllers/auth.controller"
-import { asyncHandler } from "@/helper/hof"
-import { blockIfAuthenticated, requireAuth } from "@/middlewares/authGuard"
-import { authorizeRoles } from "@/middlewares/roleGuard"
-import {
-    forgotPassword,
-    loginSchema,
-    resetPassword,
-    signUpSchema,
-} from "@/middlewares/validations/auth.schema"
-import { validate } from "@/middlewares/validations/auth.validation"
-import express from "express"
+import { successResponse } from "@/helper/ApiResponse"
 
 const router = express.Router()
 
-router
-    .post(
-        "/signup",
-        blockIfAuthenticated,
-        validate(signUpSchema),
-        asyncHandler(signUp)
-    )
-    .post(
-        "/login",
-        blockIfAuthenticated,
-        validate(loginSchema),
-        asyncHandler(logIn)
-    )
-    .post("/logout", requireAuth, asyncHandler(logout))
-    .post("/refresh", requireAuth, asyncHandler(refreshToken))
+// Public Auth
+router.post(
+    "/signup",
+    blockIfAuthenticated,
+    validate(signUpSchema),
+    asyncHandler(signUp)
+)
+router.post(
+    "/login",
+    blockIfAuthenticated,
+    validate(loginSchema),
+    asyncHandler(logIn)
+)
+router.post("/refresh", requireAuth, asyncHandler(refreshToken))
+router.post("/logout", requireAuth, asyncHandler(logout))
 
-// Reset password
+// OTP-based Forgot/Reset Password Flow
 router.post(
     "/forgot-password",
     validate(forgotPassword),
@@ -53,21 +56,29 @@ router.post(
     asyncHandler(requestResetPassword)
 )
 
-// OTP routes
-router
-    .post("/otp", blockIfAuthenticated, asyncHandler(verifyOtp))
-    .post("/resend-otp", blockIfAuthenticated, asyncHandler(requestOtp))
+router.post("/verify-otp", asyncHandler(verifyOtp))
+router.post("/resend-otp", asyncHandler(requestOtp))
 
-// Role test route # Delete if you want
+//TODO:: Move later in controller and services
+router.get(
+    "/otp-ttl",
+    asyncHandler(async (req, res) => {
+        const { email } = req.query
+        const ttl = await redisClient.ttl(`otp_${email}`)
+        return successResponse(res, { ttl }, "Fetched OTP TTL")
+    })
+)
+
+// 2FA (Optional but cool)
+router.post("/enable-2fa", requireAuth, asyncHandler(generate2FA))
+router.post("/verify-2fa", requireAuth, asyncHandler(verifyGoogle2FA))
+
+// Just for role testing (you can delete this in prod)
 router.get(
     "/admin-only",
     requireAuth,
-    authorizeRoles("user", "admin", "superadmin"),
+    authorizeRoles("admin", "superadmin"),
     asyncHandler(testRoleBase)
 )
-
-// 2FA system
-router.post("/enable-2fa", requireAuth, asyncHandler(generate2FA))
-router.post("/verify-2fa", requireAuth, asyncHandler(verifyGoogle2FA))
 
 export default router

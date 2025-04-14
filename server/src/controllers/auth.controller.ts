@@ -82,7 +82,7 @@ export const requestOtp = async (req: Request, res: Response) => {
     return successResponse(
         res,
         getLoginInfoAfterVerify,
-        "OTP verified successfully",
+        getLoginInfoAfterVerify?.message,
         200
     )
 }
@@ -148,8 +148,8 @@ export const requestOtpForForgotPassword = async (
 
     return successResponse(
         res,
-        null,
-        forgotRequestMsg?.message ?? "Reset OTP sent sucessfully",
+        forgotRequestMsg,
+        forgotRequestMsg?.message,
         200
     )
 }

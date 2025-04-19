@@ -1,12 +1,21 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode } from "react";
+import theme from '@/styles/theme'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { App as AntdApp, ConfigProvider } from 'antd'
+import { ReactNode } from 'react'
+import { BrowserRouter } from 'react-router-dom'
 
 const AppProviders = ({ children }: { children: ReactNode }) => {
-  const queryClient = new QueryClient();
+    const queryClient = new QueryClient()
 
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
+    return (
+        <BrowserRouter>
+            <QueryClientProvider client={queryClient}>
+                <ConfigProvider theme={theme}>
+                    <AntdApp>{children}</AntdApp>
+                </ConfigProvider>
+            </QueryClientProvider>
+        </BrowserRouter>
+    )
+}
 
-export default AppProviders;
+export default AppProviders

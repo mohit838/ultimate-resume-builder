@@ -6,6 +6,7 @@ import * as repo from "@/repositories/auth.repository"
 import {
     createAccessToken,
     createRefreshToken,
+    JwtPayload,
     verifyAccessToken,
     verifyRefreshToken,
 } from "@/utils/jwt"
@@ -24,7 +25,7 @@ export const createSignUpService = async (data: ISignUp) => {
 
     const otp = generateOTP()
 
-    await redisClient.set(`otp_${data.email}`, otp, { EX: 180 }) // 3 mins
+    await redisClient.set(`otp_${data.email}`, otp, { EX: 600 }) // 10 mins
 
     // Send OTP to email
     const sendEmailSuccessfully = await sendOtpEmail(data.email, otp)
@@ -37,12 +38,20 @@ export const createSignUpService = async (data: ISignUp) => {
             email: data.email,
             password: hashedPassword,
         })
+
+        const ttl = await redisClient.ttl(`otp_${data.email}`)
+
+        if (!nanoId) {
+            throw new CustomError("Error while creating user!", 500)
+        }
+
         return {
             id: nanoId,
             name: data.name,
             email: data.email,
             message:
                 "OTP sent to email. Please verify to complete registration.",
+            ttl,
         }
     } else {
         throw new CustomError("Cant send otp to your mail!")
@@ -96,24 +105,43 @@ export const userLoginService = async (data: ILoginPayload, req: Request) => {
 }
 
 export const userRefreshTokenService = async (
-    refreshToken: string | string[] | undefined
+    refreshToken: string | string[] | undefined,
+    accessUser: JwtPayload
 ) => {
     if (!refreshToken || typeof refreshToken !== "string") {
         throw new CustomError("Refresh token missing or corrupted", 400)
     }
 
-    const decoded = verifyRefreshToken(refreshToken)
+    const refreshDecoded = verifyRefreshToken(refreshToken)
 
-    // create new tokens
+    if (
+        refreshDecoded.id !== accessUser.id ||
+        refreshDecoded.email !== accessUser.email
+    ) {
+        throw new CustomError("Access/refresh token mismatch", 401)
+    }
+
+    const redisKey = `refresh_${refreshDecoded.id}`
+    const storedToken = await redisClient.get(redisKey)
+
+    if (storedToken && storedToken !== refreshToken) {
+        throw new CustomError("Refresh token reuse detected", 401)
+    }
+
     const newAccessToken = createAccessToken({
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role,
+        id: refreshDecoded.id,
+        email: refreshDecoded.email,
+        role: refreshDecoded.role,
     })
+
     const newRefreshToken = createRefreshToken({
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role,
+        id: refreshDecoded.id,
+        email: refreshDecoded.email,
+        role: refreshDecoded.role,
+    })
+
+    await redisClient.set(redisKey, newRefreshToken, {
+        EX: 60 * 60 * 24 * 7, // 7 days
     })
 
     return {
@@ -215,7 +243,7 @@ export const userAgainRequestOtpService = async ({
 
         const otp = generateOTP()
 
-        await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 180 }) // 3 mins
+        await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 600 }) // 10 mins
 
         // Send OTP to email
         const sendEmailSuccessfully = await sendOtpEmail(
@@ -223,10 +251,13 @@ export const userAgainRequestOtpService = async ({
             otp
         )
 
+        const ttl = await redisClient.ttl(`otp_${email}`)
+
         if (sendEmailSuccessfully) {
             return {
                 message:
-                    "OTP sent to email. Please verify to complete registration.",
+                    "OTP sent to email. Please verify for further process.",
+                ttl,
             }
         }
     } else {
@@ -273,4 +304,75 @@ export const verifyGoogle2FAService = async (email: string, token: string) => {
     }
 
     return true
+}
+
+export const requestOtpForForgotPasswordService = async (email: string) => {
+    if (!email) {
+        throw new CustomError("Email not found!", 404)
+    }
+
+    const existingUser = await repo.findUserByEmail(email)
+
+    if (existingUser) {
+        // if user already verified then mark unverified if call this service
+        if (existingUser.email_verified) {
+            // Mark as unverified
+            await repo.markEmailNotVerified(email)
+        }
+
+        const otp = generateOTP()
+
+        await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 600 }) // 10 mins
+
+        // Send OTP to email
+        const sendEmailSuccessfully = await sendOtpEmail(
+            existingUser.email,
+            otp
+        )
+
+        const ttl = await redisClient.ttl(`otp_${email}`)
+
+        if (sendEmailSuccessfully) {
+            return {
+                message:
+                    "OTP sent to email. Please verify to complete registration.",
+                ttl,
+            }
+        }
+    } else {
+        throw new CustomError("Cant send otp to your mail!")
+    }
+}
+
+export const requestForResetPasswordService = async (
+    email: string,
+    password: string,
+    confirmPassword: string
+) => {
+    if (!email || password !== confirmPassword) {
+        // Use decoy message for hacking protections
+        throw new CustomError("Email or password not found!", 404)
+    }
+
+    const existingUser = await repo.findUserByEmail(email)
+
+    if (existingUser) {
+        if (existingUser.email_verified) {
+            const hashedPassword = await bcrypt.hash(password, 10)
+
+            await repo.setNewPasswordAfterReset(email, hashedPassword)
+
+            return true
+        }
+    } else {
+        throw new CustomError("Error while reseting password!")
+    }
+}
+
+export const getOtpTtlService = async (email: string) => {
+    const ttl = await redisClient.ttl(`otp_${email}`)
+    if (ttl === -2) {
+        throw new CustomError("OTP not found or expired", 404)
+    }
+    return ttl
 }

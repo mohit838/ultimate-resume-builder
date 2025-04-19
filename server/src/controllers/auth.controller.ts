@@ -3,6 +3,9 @@ import { successResponse } from "@/helper/ApiResponse"
 import {
     createSignUpService,
     generate2FAService,
+    getOtpTtlService,
+    requestForResetPasswordService,
+    requestOtpForForgotPasswordService,
     userAgainRequestOtpService,
     userLoginService,
     userLogOutService,
@@ -10,6 +13,7 @@ import {
     userVerifyOtpService,
     verifyGoogle2FAService,
 } from "@/services/auth.service"
+import { JwtPayload } from "@/utils/jwt"
 import { Request, Response } from "express"
 
 // 1. signup
@@ -37,10 +41,24 @@ export const logIn = async (req: Request, res: Response) => {
 // 3. refresh token generations
 export const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.headers["x-refresh-token"]
+    const accessUser = req.user as JwtPayload
 
-    const refreshTokenGenerate = await userRefreshTokenService(refreshToken)
+    const tokenSet = await userRefreshTokenService(refreshToken, accessUser)
 
-    return successResponse(res, refreshTokenGenerate, "Token refreshed", 200)
+    console.log(tokenSet)
+
+    return res.status(200).json({
+        success: true,
+        message: "Token refreshed",
+        model: {
+            ...tokenSet,
+            user: {
+                id: accessUser.id,
+                email: accessUser.email,
+                role: accessUser.role,
+            },
+        },
+    })
 }
 
 // 4. logout
@@ -80,7 +98,7 @@ export const requestOtp = async (req: Request, res: Response) => {
     return successResponse(
         res,
         getLoginInfoAfterVerify,
-        "OTP verified successfully",
+        getLoginInfoAfterVerify?.message,
         200
     )
 }
@@ -116,4 +134,64 @@ export const verifyGoogle2FA = async (req: Request, res: Response) => {
     await verifyGoogle2FAService(email, token)
 
     return successResponse(res, null, "2FA verification successful", 200)
+}
+
+// 10. Reset password request
+export const requestResetPassword = async (req: Request, res: Response) => {
+    const { email, password, confirmPassword } = req.body
+
+    if (!email || password !== confirmPassword) {
+        throw new CustomError("Email and password are required", 400)
+    }
+
+    await requestForResetPasswordService(email, password, confirmPassword)
+
+    return successResponse(res, null, "Reset password sucessfully", 200)
+}
+
+// 11. Forgot password request
+export const requestOtpForForgotPassword = async (
+    req: Request,
+    res: Response
+) => {
+    const { email } = req.body
+
+    if (!email) {
+        throw new CustomError("Email is required", 400)
+    }
+
+    const forgotRequestMsg = await requestOtpForForgotPasswordService(email)
+
+    return successResponse(
+        res,
+        forgotRequestMsg,
+        forgotRequestMsg?.message,
+        200
+    )
+}
+
+// 12. ttl for otp
+export const getOtpTtl = async (req: Request, res: Response) => {
+    const { email } = req.query
+
+    if (typeof email !== "string") {
+        throw new CustomError("Invalid email format", 400)
+    }
+
+    const ttl = await getOtpTtlService(email)
+
+    if (!ttl) {
+        throw new CustomError("OTP TTL not found", 404)
+    }
+    if (ttl === 0) {
+        return successResponse(res, null, "OTP expired")
+    }
+    if (ttl < 0) {
+        return successResponse(res, null, "OTP not found")
+    }
+    if (ttl > 0) {
+        return successResponse(res, null, "OTP is valid")
+    }
+    // If ttl is found and greater than 0, return the ttl
+    return successResponse(res, { ttl }, "Fetched OTP TTL")
 }

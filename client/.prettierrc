@@ -1,0 +1,22 @@
+{
+    "trailingComma": "es5",
+    "tabWidth": 4,
+    "semi": false,
+    "singleQuote": true,
+    "importOrder": ["^@/(.*)$", "^[./]"],
+    "importOrderSeparation": true,
+    "importOrderSortSpecifiers": true,
+    "overrides": [
+        {
+            "files": "*.ts",
+            "options": {
+                "parser": "typescript",
+                "singleQuote": false,
+                "quoteProps": "as-needed",
+                "importOrderParserPlugins": ["typescript"],
+                "importOrderCaseInsensitive": true,
+                "jsxSingleQuote": false
+            }
+        }
+    ]
+}

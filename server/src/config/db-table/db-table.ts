@@ -121,7 +121,7 @@ export async function ensureTablesExist() {
     await db.execute(`
     INSERT INTO roles (id, name, description) VALUES
     (1001, 'user', 'Regular registered user'),
-    (1002, 'superadmin', 'Has all privileges'),
+    (1009, 'superadmin', 'Has all privileges'),
     (1005, 'admin', 'Can manage content & users')
     `)
 

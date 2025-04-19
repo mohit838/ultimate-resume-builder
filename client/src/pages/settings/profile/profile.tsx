@@ -1,16 +1,22 @@
-import useAuthStore from "../../../store/auth-store";
+import useAuthStore from '../../../stores/useAuthStore'
 
 const ProfilePage = () => {
-  const { isAuthenticated, token, logout } = useAuthStore();
+    const { isAuthenticated } = useAuthStore()
 
-  console.log(token);
+    return (
+        <div>
+            <h1 className="text-2xl font-bold">Profile Page</h1>
+            {isAuthenticated ? (
+                <div>
+                    <p>Welcome to your profile!</p>
 
-  return (
-    <div>
-      <p>Status: {isAuthenticated ? "Logged in" : "Logged out"}</p>
-      <button onClick={logout}>Logout</button>
-    </div>
-  );
-};
+                    <p>Here you can view and edit your profile information.</p>
+                </div>
+            ) : (
+                <p>401</p>
+            )}
+        </div>
+    )
+}
 
-export default ProfilePage;
+export default ProfilePage

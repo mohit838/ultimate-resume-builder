@@ -1,24 +1,39 @@
+import api from '@/api/axios'
+import { useNotification } from '@/hooks/useNotification'
+import { endpoints } from '@/services/endpoints'
+import { handleAxiosError } from '@/utils/handleAxiosError'
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Card, Form, Input, message, Typography } from 'antd'
-import { Link } from 'react-router-dom'
+import { Button, Card, Form, Input, Typography } from 'antd'
+import { Link, useNavigate } from 'react-router-dom'
 
 const { Title, Text } = Typography
 
 const SignupPage = () => {
+    const { success, error } = useNotification()
+    const navigate = useNavigate()
+
     const handleSubmit = async (values: {
         name: string
         email: string
         password: string
     }) => {
         try {
-            console.log('Signup values:', values)
-            message.success('Signup successful! Please verify OTP.')
+            const response = await api.post(endpoints.auth.signUp, {
+                username: values.name,
+                email: values.email,
+                password: values.password,
+            })
+
+            const { message: msg } = response.data
+
+            success(msg || 'Signup successful! Please verify OTP.')
+
+            // Redirect to OTP verification page with email in route state
+            navigate('/verify-otp', {
+                state: { email: values.email },
+            })
         } catch (err: unknown) {
-            if (err instanceof Error) {
-                message.error(err.message)
-            } else {
-                message.error('Signup failed')
-            }
+            handleAxiosError(err, error)
         }
     }
 

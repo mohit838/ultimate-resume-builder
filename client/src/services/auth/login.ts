@@ -1,4 +1,5 @@
-import api from "@/api/lib/axios"
+import api from "@/api/axios"
+import { endpoints } from "../endpoints"
 
 export interface LoginPayload {
     email: string
@@ -21,6 +22,9 @@ export interface LoginResponse {
 export const loginApi = async (
     payload: LoginPayload
 ): Promise<LoginResponse> => {
-    const { data } = await api.post<LoginResponse>("auth/login", payload)
+    const { data } = await api.post<LoginResponse>(
+        `${endpoints.auth.login}`,
+        payload
+    )
     return data
 }

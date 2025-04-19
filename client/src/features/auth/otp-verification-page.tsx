@@ -1,5 +1,6 @@
-import api from '@/api/lib/axios'
+import api from '@/api/axios'
 import { useResendOtp, useVerifyOtp } from '@/hooks/useOtpMutation'
+import { endpoints } from '@/services/endpoints'
 import { Button, Card, Form, Input, Typography } from 'antd'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -26,7 +27,7 @@ const OtpVerificationPage = () => {
     useEffect(() => {
         const fetchTTL = async () => {
             try {
-                const { data } = await api.get(`auth/otp-ttl`, {
+                const { data } = await api.get(`${endpoints.auth.otpTtl}`, {
                     params: { email },
                 })
 

@@ -1,4 +1,4 @@
-import AppRoutes from '@/routes/routes'
+import AppRoutes from '@/routes/app-routes'
 import useAuthStore from '@/stores/useAuthStore'
 import { useLocation } from 'react-router-dom'
 import { ResumeLayout } from './components/layouts/resume-layout'

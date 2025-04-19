@@ -21,18 +21,18 @@ const ProfilePage = React.lazy(() => import("@/pages/settings/profile/profile"))
 const Enable2faPage = React.lazy(
     () => import("@/pages/settings/enable-2fa/enable-2fa")
 )
-const LogoutHandler = React.lazy(() => import("@/features/auth/pages/logout"))
-const LoginPage = React.lazy(() => import("@/features/auth/pages/login"))
-const SignupPage = React.lazy(() => import("@/features/auth/pages/signup"))
+const LogoutHandler = React.lazy(() => import("@/features/auth/logout"))
+const LoginPage = React.lazy(() => import("@/features/auth/login"))
+const SignupPage = React.lazy(() => import("@/features/auth/signup"))
 const ResetPasswordPage = React.lazy(
-    () => import("@/features/auth/pages/reset-password")
+    () => import("@/features/auth/reset-password")
 )
 const OtpVerificationPage = React.lazy(
-    () => import("@/features/auth/pages/otp-verification-page")
+    () => import("@/features/auth/otp-verification-page")
 )
 
 const ResetPasswordRequestPage = React.lazy(
-    () => import("@/features/auth/pages/reset-password-request")
+    () => import("@/features/auth/reset-password-request")
 )
 
 export const routeConfig: RouteItem[] = [

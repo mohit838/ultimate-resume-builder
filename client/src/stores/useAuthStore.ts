@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-interface User {
+export interface User {
     id: string
     name: string
     email: string
@@ -10,7 +10,7 @@ interface User {
     googleAuthEnabled: boolean
 }
 
-interface AuthState {
+export interface AuthState {
     isAuthenticated: boolean
     token: string | null
     isLoading: boolean

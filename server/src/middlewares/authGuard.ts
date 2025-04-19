@@ -1,7 +1,11 @@
+import { SERVICE_SECURITIES } from "@/config/AppConstant"
 import redisClient from "@/config/redisClient"
 import { CustomError } from "@/errors/CustomError"
-import { verifyAccessToken } from "@/utils/jwt"
+import { JwtPayload, verifyAccessToken } from "@/utils/jwt"
 import { NextFunction, Request, Response } from "express"
+import jwt from "jsonwebtoken"
+
+const jwtSecret = SERVICE_SECURITIES.jwt_secret
 
 export const blockIfAuthenticated = (
     req: Request,
@@ -40,5 +44,61 @@ export const requireAuth = async (
         next()
     } catch {
         throw new CustomError("Invalid or expired token", 401)
+    }
+}
+
+export const allowExpiredAccessToken = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const authHeader = req.headers.authorization
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        throw new CustomError("Unauthorized: Access token missing", 401)
+    }
+
+    const token = authHeader.split(" ")[1]
+
+    try {
+        // Decode token while ignoring expiration
+        const decoded = jwt.verify(token, jwtSecret, { ignoreExpiration: true })
+
+        if (typeof decoded === "string") {
+            throw new CustomError("Invalid token payload", 401)
+        }
+
+        const now = Math.floor(Date.now() / 1000)
+        const exp = decoded.exp ?? now
+        const expiresIn = exp - now
+
+        console.log("Decoded token:", decoded)
+        console.log("Token expiration:", exp)
+        console.log("Current time:", now)
+        console.log("Token expires in:", expiresIn)
+
+        // If token is still valid > blacklist and deny refresh
+        if (exp > now) {
+            const blacklistKey = `bl_${token}`
+
+            const isAlreadyBlacklisted = await redisClient.get(blacklistKey)
+
+            if (!isAlreadyBlacklisted) {
+                const ttl = expiresIn > 0 ? expiresIn : 60
+
+                await redisClient.set(blacklistKey, "1", {
+                    EX: ttl,
+                })
+            }
+
+            throw new CustomError("Token is still valid. Action denied.", 403)
+        }
+
+        // Token is expired — allow refresh attempt
+        req.user = decoded as JwtPayload
+        return next()
+    } catch (err) {
+        console.error("Failed to decode access token", err)
+        throw new CustomError("Invalid or tampered token", 401)
     }
 }

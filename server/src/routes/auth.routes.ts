@@ -1,5 +1,9 @@
 import { asyncHandler } from "@/helper/hof"
-import { blockIfAuthenticated, requireAuth } from "@/middlewares/authGuard"
+import {
+    allowExpiredAccessToken,
+    blockIfAuthenticated,
+    requireAuth,
+} from "@/middlewares/authGuard"
 import { authorizeRoles } from "@/middlewares/roleGuard"
 import {
     forgotPassword,
@@ -10,9 +14,9 @@ import {
 import { validate } from "@/middlewares/validations/auth.validation"
 import express from "express"
 
-import redisClient from "@/config/redisClient"
 import {
     generate2FA,
+    getOtpTtl,
     logIn,
     logout,
     refreshToken,
@@ -24,7 +28,6 @@ import {
     verifyGoogle2FA,
     verifyOtp,
 } from "@/controllers/auth.controller"
-import { successResponse } from "@/helper/ApiResponse"
 
 const router = express.Router()
 
@@ -41,8 +44,11 @@ router.post(
     validate(loginSchema),
     asyncHandler(logIn)
 )
-router.post("/refresh", requireAuth, asyncHandler(refreshToken))
 router.post("/logout", requireAuth, asyncHandler(logout))
+
+// Refresh Token
+// This route is used to refresh the access token using the refresh token.
+router.post("/refresh", allowExpiredAccessToken, asyncHandler(refreshToken))
 
 // OTP-based Forgot/Reset Password Flow
 router.post(
@@ -59,15 +65,8 @@ router.post(
 router.post("/verify-otp", asyncHandler(verifyOtp))
 router.post("/resend-otp", asyncHandler(requestOtp))
 
-//TODO:: Move later in controller and services
-router.get(
-    "/otp-ttl",
-    asyncHandler(async (req, res) => {
-        const { email } = req.query
-        const ttl = await redisClient.ttl(`otp_${email}`)
-        return successResponse(res, { ttl }, "Fetched OTP TTL")
-    })
-)
+// OTP-based Login Flow get ttl
+router.get("/otp-ttl", asyncHandler(getOtpTtl))
 
 // 2FA (Optional but cool)
 router.post("/enable-2fa", requireAuth, asyncHandler(generate2FA))
@@ -77,7 +76,7 @@ router.post("/verify-2fa", requireAuth, asyncHandler(verifyGoogle2FA))
 router.get(
     "/admin-only",
     requireAuth,
-    authorizeRoles("admin", "superadmin"),
+    authorizeRoles("admin", "superadmin", "user"),
     asyncHandler(testRoleBase)
 )
 

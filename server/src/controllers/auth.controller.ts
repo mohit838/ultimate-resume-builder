@@ -3,6 +3,7 @@ import { successResponse } from "@/helper/ApiResponse"
 import {
     createSignUpService,
     generate2FAService,
+    getOtpTtlService,
     requestForResetPasswordService,
     requestOtpForForgotPasswordService,
     userAgainRequestOtpService,
@@ -12,6 +13,7 @@ import {
     userVerifyOtpService,
     verifyGoogle2FAService,
 } from "@/services/auth.service"
+import { JwtPayload } from "@/utils/jwt"
 import { Request, Response } from "express"
 
 // 1. signup
@@ -39,10 +41,24 @@ export const logIn = async (req: Request, res: Response) => {
 // 3. refresh token generations
 export const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.headers["x-refresh-token"]
+    const accessUser = req.user as JwtPayload
 
-    const refreshTokenGenerate = await userRefreshTokenService(refreshToken)
+    const tokenSet = await userRefreshTokenService(refreshToken, accessUser)
 
-    return successResponse(res, refreshTokenGenerate, "Token refreshed", 200)
+    console.log(tokenSet)
+
+    return res.status(200).json({
+        success: true,
+        message: "Token refreshed",
+        model: {
+            ...tokenSet,
+            user: {
+                id: accessUser.id,
+                email: accessUser.email,
+                role: accessUser.role,
+            },
+        },
+    })
 }
 
 // 4. logout
@@ -152,4 +168,30 @@ export const requestOtpForForgotPassword = async (
         forgotRequestMsg?.message,
         200
     )
+}
+
+// 12. ttl for otp
+export const getOtpTtl = async (req: Request, res: Response) => {
+    const { email } = req.query
+
+    if (typeof email !== "string") {
+        throw new CustomError("Invalid email format", 400)
+    }
+
+    const ttl = await getOtpTtlService(email)
+
+    if (!ttl) {
+        throw new CustomError("OTP TTL not found", 404)
+    }
+    if (ttl === 0) {
+        return successResponse(res, null, "OTP expired")
+    }
+    if (ttl < 0) {
+        return successResponse(res, null, "OTP not found")
+    }
+    if (ttl > 0) {
+        return successResponse(res, null, "OTP is valid")
+    }
+    // If ttl is found and greater than 0, return the ttl
+    return successResponse(res, { ttl }, "Fetched OTP TTL")
 }

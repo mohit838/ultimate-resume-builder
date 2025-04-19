@@ -1,4 +1,5 @@
-import api from "@/api/lib/axios"
+import api from "@/api/axios"
+import { endpoints } from "../endpoints"
 
 export interface ResetPasswordPayload {
     email: string
@@ -7,6 +8,6 @@ export interface ResetPasswordPayload {
 }
 
 export const resetPasswordApi = async (data: ResetPasswordPayload) => {
-    const response = await api.post("auth/reset-password", data)
+    const response = await api.post(`${endpoints.auth.resetPassword}`, data)
     return response.data
 }

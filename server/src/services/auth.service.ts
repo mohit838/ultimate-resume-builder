@@ -6,6 +6,7 @@ import * as repo from "@/repositories/auth.repository"
 import {
     createAccessToken,
     createRefreshToken,
+    JwtPayload,
     verifyAccessToken,
     verifyRefreshToken,
 } from "@/utils/jwt"
@@ -24,7 +25,7 @@ export const createSignUpService = async (data: ISignUp) => {
 
     const otp = generateOTP()
 
-    await redisClient.set(`otp_${data.email}`, otp, { EX: 180 }) // 3 mins
+    await redisClient.set(`otp_${data.email}`, otp, { EX: 600 }) // 10 mins
 
     // Send OTP to email
     const sendEmailSuccessfully = await sendOtpEmail(data.email, otp)
@@ -104,24 +105,43 @@ export const userLoginService = async (data: ILoginPayload, req: Request) => {
 }
 
 export const userRefreshTokenService = async (
-    refreshToken: string | string[] | undefined
+    refreshToken: string | string[] | undefined,
+    accessUser: JwtPayload
 ) => {
     if (!refreshToken || typeof refreshToken !== "string") {
         throw new CustomError("Refresh token missing or corrupted", 400)
     }
 
-    const decoded = verifyRefreshToken(refreshToken)
+    const refreshDecoded = verifyRefreshToken(refreshToken)
 
-    // create new tokens
+    if (
+        refreshDecoded.id !== accessUser.id ||
+        refreshDecoded.email !== accessUser.email
+    ) {
+        throw new CustomError("Access/refresh token mismatch", 401)
+    }
+
+    const redisKey = `refresh_${refreshDecoded.id}`
+    const storedToken = await redisClient.get(redisKey)
+
+    if (storedToken && storedToken !== refreshToken) {
+        throw new CustomError("Refresh token reuse detected", 401)
+    }
+
     const newAccessToken = createAccessToken({
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role,
+        id: refreshDecoded.id,
+        email: refreshDecoded.email,
+        role: refreshDecoded.role,
     })
+
     const newRefreshToken = createRefreshToken({
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role,
+        id: refreshDecoded.id,
+        email: refreshDecoded.email,
+        role: refreshDecoded.role,
+    })
+
+    await redisClient.set(redisKey, newRefreshToken, {
+        EX: 60 * 60 * 24 * 7, // 7 days
     })
 
     return {
@@ -223,7 +243,7 @@ export const userAgainRequestOtpService = async ({
 
         const otp = generateOTP()
 
-        await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 180 }) // 3 mins
+        await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 600 }) // 10 mins
 
         // Send OTP to email
         const sendEmailSuccessfully = await sendOtpEmail(
@@ -302,7 +322,7 @@ export const requestOtpForForgotPasswordService = async (email: string) => {
 
         const otp = generateOTP()
 
-        await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 180 }) // 3 mins
+        await redisClient.set(`otp_${existingUser.email}`, otp, { EX: 600 }) // 10 mins
 
         // Send OTP to email
         const sendEmailSuccessfully = await sendOtpEmail(
@@ -330,7 +350,7 @@ export const requestForResetPasswordService = async (
     confirmPassword: string
 ) => {
     if (!email || password !== confirmPassword) {
-        // Use decoy message for hacker protections
+        // Use decoy message for hacking protections
         throw new CustomError("Email or password not found!", 404)
     }
 
@@ -347,4 +367,12 @@ export const requestForResetPasswordService = async (
     } else {
         throw new CustomError("Error while reseting password!")
     }
+}
+
+export const getOtpTtlService = async (email: string) => {
+    const ttl = await redisClient.ttl(`otp_${email}`)
+    if (ttl === -2) {
+        throw new CustomError("OTP not found or expired", 404)
+    }
+    return ttl
 }

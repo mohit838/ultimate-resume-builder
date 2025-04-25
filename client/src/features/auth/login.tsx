@@ -1,5 +1,5 @@
 import { useNotification } from '@/hooks/useNotification'
-import { loginApi } from '@/services/auth/login'
+import { loginApi } from '@/services/auth/auth'
 import useAuthStore from '@/stores/useAuthStore'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { useMutation } from '@tanstack/react-query'

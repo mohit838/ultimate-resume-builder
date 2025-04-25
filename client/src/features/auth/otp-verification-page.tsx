@@ -1,5 +1,5 @@
 import api from '@/api/axios'
-import { useResendOtp, useVerifyOtp } from '@/hooks/useOtpMutation'
+import { useResendOtp, useVerifyOtp } from '@/hooks/useAuth'
 import { endpoints } from '@/services/endpoints'
 import { Button, Card, Form, Input, Typography } from 'antd'
 import { useEffect, useState } from 'react'

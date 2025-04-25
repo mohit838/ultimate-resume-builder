@@ -1,4 +1,4 @@
-import { useResetPasswordMutation } from '@/hooks/useResetPassword'
+import { useResetPasswordMutation } from '@/hooks/useAuth'
 import { LockOutlined } from '@ant-design/icons'
 import { Button, Card, Form, Input, Typography } from 'antd'
 import { useEffect } from 'react'

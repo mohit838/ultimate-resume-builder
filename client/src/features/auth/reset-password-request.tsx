@@ -1,4 +1,4 @@
-import { useForgotPasswordMutation } from '@/hooks/useForgotPassword'
+import { useForgotPasswordMutation } from '@/hooks/useAuth'
 import { MailOutlined } from '@ant-design/icons'
 import { Button, Card, Form, Input, Typography } from 'antd'
 

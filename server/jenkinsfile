@@ -1,59 +1,73 @@
 pipeline {
-    agent any
-    
-    tools {
-        nodejs('nodeV22')
+  agent any
+
+  tools {
+    nodejs 'nodeV22'
+  }
+
+  stages {
+    stage('Clone Repository') {
+      steps {
+        git(
+          branch: 'master',
+          url: 'git@github.com:mohit838/ultimate-resume-builder.git',
+          credentialsId: 'github-ssh'
+        )
+      }
     }
 
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git branch: 'master', 
-                    url: 'git@github.com:mohit838/ultimate-resume-builder.git', 
-                    credentialsId: 'github-ssh'
-            }
+    stage('Build Project') {
+      steps {
+        dir('server') {
+          echo 'Building project…'
+          sh 'npm install'
+          sh 'npm run build'
         }
-        stage('Change Directory') {
-             steps {
-                 dir('server') {
-                     echo 'Changing directory'
-                 }
-             }
-         }
-        stage('Build Project') {
-            steps {
-                 dir('server') {
-                     echo 'Building...'
-                     sh 'npm install'
-                     sh 'npm run build' 
-                 }
-             }
-        }
-        stage('Build & Deploy Docker') {
-            steps {
-                dir('server') {
-                script {
-                    // Stop/remove any existing container
-                    sh """
-                    if docker ps -a --format '{{.Names}}' | grep -q '^${containerName}\$'; then
-                        docker stop ${containerName}
-                        docker rm ${containerName}
-                    fi
-                    """
-
-                    // Build (will error out if build fails)
-                    sh "docker build -t ${imageName} ."
-
-                    // Run new container
-                    sh """
-                    docker run -d --restart=always \
-                        --name ${containerName} \
-                        -p 127.0.0.1:3647:1234 ${imageName}
-                    """
-                }
-                }
-            }
-        }
-
+      }
     }
+
+    stage('Build & Deploy Docker') {
+      steps {
+        dir('server') {
+          script {
+            // define your image & container names here:
+            def imageName     = "resume-builder-server:latest"
+            def containerName = "resume-builder-server-container"
+
+            // Stop & remove existing container if present
+            sh """
+              if docker ps -a --format '{{.Names}}' | grep -q '^${containerName}\$'; then
+                echo \"Stopping \${containerName}…\"
+                docker stop ${containerName}
+                docker rm ${containerName}
+              else
+                echo \"No existing container found. Continuing…\"
+              fi
+            """
+
+            // Build — will error (and fail the stage) if it fails
+            echo "Building Docker image ${imageName}…"
+            sh "docker build -t ${imageName} ."
+
+            // Run the new container
+            echo "Running container ${containerName}…"
+            sh """
+              docker run -d --restart=always \
+                --name ${containerName} \
+                -p 3647:1234 ${imageName}
+            """
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo '✅ Pipeline succeeded'
+    }
+    failure {
+      echo '❌ Pipeline failed'
+    }
+  }
 }

@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    
+    tools {
+        nodejs('nodeV22')
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'master', 
+                    url: 'git@github.com:mohit838/ultimate-resume-builder.git', 
+                    credentialsId: 'github-ssh'
+            }
+        }
+        stage('Change Directory') {
+             steps {
+                 dir('server') {
+                     echo 'Changing directory'
+                 }
+             }
+         }
+        stage('Build Project') {
+            steps {
+                 dir('server') {
+                     echo 'Building...'
+                     sh 'npm install'
+                     sh 'npm run build' 
+                 }
+             }
+        }
+        stage('Build & Deploy Docker') {
+            steps {
+                dir('server') {
+                script {
+                    // Stop/remove any existing container
+                    sh """
+                    if docker ps -a --format '{{.Names}}' | grep -q '^${containerName}\$'; then
+                        docker stop ${containerName}
+                        docker rm ${containerName}
+                    fi
+                    """
+
+                    // Build (will error out if build fails)
+                    sh "docker build -t ${imageName} ."
+
+                    // Run new container
+                    sh """
+                    docker run -d --restart=always \
+                        --name ${containerName} \
+                        -p 127.0.0.1:3647:1234 ${imageName}
+                    """
+                }
+                }
+            }
+        }
+
+    }
+}

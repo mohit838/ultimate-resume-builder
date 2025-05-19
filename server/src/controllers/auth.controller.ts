@@ -26,7 +26,7 @@ export const signUp = async (req: Request, res: Response) => {
         password,
     })
 
-    return successResponse(res, newUser, "User created successfully", 201)
+    return successResponse(res, newUser, "Need to verify OTP", 200)
 }
 
 // 2. login

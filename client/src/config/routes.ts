@@ -6,6 +6,18 @@ import {
 } from "@ant-design/icons"
 import React from "react"
 
+// Import all pages
+import LoginPage from "@/features/auth/login"
+import LogoutHandler from "@/features/auth/logout"
+import OtpVerificationPage from "@/features/auth/otp-verification-page"
+import ResetPasswordPage from "@/features/auth/reset-password"
+import ResetPasswordRequestPage from "@/features/auth/reset-password-request"
+import SignupPage from "@/features/auth/signup"
+import ResumePage from "@/features/resume/resume"
+import DashboardPage from "@/pages/dashboard/dashboard"
+import Enable2faPage from "@/pages/settings/enable-2fa/enable-2fa"
+import ProfilePage from "@/pages/settings/profile/profile"
+
 export const publicPaths = [
     "/login",
     "/signup",
@@ -13,27 +25,6 @@ export const publicPaths = [
     "/verify-otp",
     "/reset-password",
 ]
-
-// Lazy imports
-const DashboardPage = React.lazy(() => import("@/pages/dashboard/dashboard"))
-const ResumePage = React.lazy(() => import("@/features/resume/resume"))
-const ProfilePage = React.lazy(() => import("@/pages/settings/profile/profile"))
-const Enable2faPage = React.lazy(
-    () => import("@/pages/settings/enable-2fa/enable-2fa")
-)
-const LogoutHandler = React.lazy(() => import("@/features/auth/logout"))
-const LoginPage = React.lazy(() => import("@/features/auth/login"))
-const SignupPage = React.lazy(() => import("@/features/auth/signup"))
-const ResetPasswordPage = React.lazy(
-    () => import("@/features/auth/reset-password")
-)
-const OtpVerificationPage = React.lazy(
-    () => import("@/features/auth/otp-verification-page")
-)
-
-const ResetPasswordRequestPage = React.lazy(
-    () => import("@/features/auth/reset-password-request")
-)
 
 export const routeConfig: RouteItem[] = [
     {

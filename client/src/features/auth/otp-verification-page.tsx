@@ -1,6 +1,7 @@
 import api from '@/api/axios'
 import { useResendOtp, useVerifyOtp } from '@/hooks/useOtpMutation'
 import { endpoints } from '@/services/endpoints'
+import useSignUpStore from '@/stores/useSignUp'
 import { Button, Card, Form, Input, Typography } from 'antd'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -8,20 +9,16 @@ import { useNavigate } from 'react-router-dom'
 const { Title, Text } = Typography
 
 const OtpVerificationPage = () => {
+    const [form] = Form.useForm()
+    const { email } = useSignUpStore()
     const navigate = useNavigate()
 
-    const email = localStorage.getItem('email_forgot') || ''
-
-    if (!email) {
-        navigate('/login')
-    }
-
-    const [form] = Form.useForm()
+    // State to manage OTP resend button and countdown
     const [resendDisabled, setResendDisabled] = useState(true)
     const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
 
-    const verifyOtpMutation = useVerifyOtp(email)
-    const resendOtpMutation = useResendOtp(email)
+    const verifyOtpMutation = useVerifyOtp(email ?? '')
+    const resendOtpMutation = useResendOtp(email ?? '')
 
     // Fetch TTL from backend on mount
     useEffect(() => {
@@ -104,7 +101,7 @@ const OtpVerificationPage = () => {
                     </Text>
                 </div>
 
-                <Form layout="vertical" form={form} onFinish={handleVerifyOtp}>
+                <Form form={form} layout="vertical" onFinish={handleVerifyOtp}>
                     <Form.Item
                         name="otp"
                         label="Enter OTP"

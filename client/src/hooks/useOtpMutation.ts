@@ -17,9 +17,8 @@ export const useVerifyOtp = (email: string) => {
             return verifyOtpApi({ email, otp: parsedOtp })
         },
         onSuccess: () => {
-            success("OTP verified! Proceed to reset password.")
-            localStorage.setItem("otp_verified", "true")
-            navigate("/reset-password")
+            success("OTP verified!")
+            navigate("/login")
         },
         onError: (err: AxiosError<{ message?: string }>) => {
             error(err?.response?.data?.message || "Invalid OTP or expired.")

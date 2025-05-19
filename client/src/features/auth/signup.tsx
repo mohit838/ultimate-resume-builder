@@ -1,6 +1,7 @@
 import api from '@/api/axios'
 import { useNotification } from '@/hooks/useNotification'
 import { endpoints } from '@/services/endpoints'
+import useSignUpStore from '@/stores/useSignUp'
 import { handleAxiosError } from '@/utils/handleAxiosError'
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
 import { Button, Card, Form, Input, Typography } from 'antd'
@@ -9,7 +10,9 @@ import { Link, useNavigate } from 'react-router-dom'
 const { Title, Text } = Typography
 
 const SignupPage = () => {
+    const [form] = Form.useForm()
     const { success, error } = useNotification()
+    const { setEmail, setSignedUp } = useSignUpStore()
     const navigate = useNavigate()
 
     const handleSubmit = async (values: {
@@ -23,15 +26,16 @@ const SignupPage = () => {
                 email: values.email,
                 password: values.password,
             })
-
             const { message: msg } = response.data
-
             success(msg || 'Signup successful! Please verify OTP.')
 
-            // Redirect to OTP verification page with email in route state
-            navigate('/verify-otp', {
-                state: { email: values.email },
-            })
+            // If the signup is successful, navigate to the OTP verification page
+            // and set the email in the store for OTP verification and signup true
+            if (msg) {
+                setEmail(values.email)
+                setSignedUp(true)
+                navigate('/verify-otp')
+            }
         } catch (err: unknown) {
             handleAxiosError(err, error)
         }
@@ -49,6 +53,7 @@ const SignupPage = () => {
                 </div>
 
                 <Form
+                    form={form}
                     layout="vertical"
                     onFinish={handleSubmit}
                     requiredMark={false}

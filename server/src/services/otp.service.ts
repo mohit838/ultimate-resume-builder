@@ -22,7 +22,7 @@ export const sendOtpEmail = async (
         html: `
             <h2>Verify Your Email</h2>
             <p>Your OTP is: <strong>${Number(otp)}</strong></p>
-            <p>This code will expire in 3 minutes.</p>
+            <p>This code will expire in 9 minutes.</p>
         `,
     }
 

@@ -105,7 +105,7 @@ export const requestOtp = async (req: Request, res: Response) => {
 
 // 7. test role base auth
 export const testRoleBase = async (req: Request, res: Response) => {
-    return successResponse(res, null, "Role test successfull!", 200)
+    return successResponse(res, null, "Role test successful!", 200)
 }
 
 // 8. 2FA - Generate
@@ -146,7 +146,7 @@ export const requestResetPassword = async (req: Request, res: Response) => {
 
     await requestForResetPasswordService(email, password, confirmPassword)
 
-    return successResponse(res, null, "Reset password sucessfully", 200)
+    return successResponse(res, null, "Reset password successfully", 200)
 }
 
 // 11. Forgot password request

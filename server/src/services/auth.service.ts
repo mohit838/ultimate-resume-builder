@@ -151,25 +151,37 @@ export const userRefreshTokenService = async (
 }
 
 export const userLogOutService = async (authHeader: string | undefined) => {
-    if (!authHeader) throw new CustomError("No token provided", 400)
+    if (!authHeader) {
+        throw new CustomError("No token provided", 400)
+    }
 
-    if (typeof authHeader !== "string")
-        throw new CustomError("Token corrupted", 400)
+    if (typeof authHeader !== "string" || !authHeader.startsWith("Bearer ")) {
+        throw new CustomError("Malformed Authorization header", 400)
+    }
 
     const token = authHeader.split(" ")[1]
-    const decoded = verifyAccessToken(token)
+    if (!token || token.length < 10) {
+        throw new CustomError("Access token is missing or invalid", 400)
+    }
+
+    let decoded: JwtPayload
+    try {
+        decoded = verifyAccessToken(token)
+    } catch (err) {
+        console.error("Token decode failed:", err)
+        throw new CustomError("Invalid or expired token", 401)
+    }
 
     if (!decoded.exp) {
         throw new CustomError("Invalid token: missing expiration", 400)
     }
 
-    const expiresIn = decoded.exp - Math.floor(Date.now() / 1000) // seconds
-
+    const expiresIn = decoded.exp - Math.floor(Date.now() / 1000)
     const blacklistToken = await redisClient.set(`bl_${token}`, "1", {
         EX: expiresIn,
     })
 
-    return blacklistToken ? true : false
+    return !!blacklistToken
 }
 
 export const userVerifyOtpService = async ({
@@ -365,7 +377,7 @@ export const requestForResetPasswordService = async (
             return true
         }
     } else {
-        throw new CustomError("Error while reseting password!")
+        throw new CustomError("Error while resetting password!")
     }
 }
 

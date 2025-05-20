@@ -72,11 +72,6 @@ export const allowExpiredAccessToken = async (
         const exp = decoded.exp ?? now
         const expiresIn = exp - now
 
-        console.log("Decoded token:", decoded)
-        console.log("Token expiration:", exp)
-        console.log("Current time:", now)
-        console.log("Token expires in:", expiresIn)
-
         // If token is still valid > blacklist and deny refresh
         if (exp > now) {
             const blacklistKey = `bl_${token}`

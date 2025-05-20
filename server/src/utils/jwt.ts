@@ -24,11 +24,18 @@ export const createRefreshToken = (payload: JwtPayload): string =>
 
 // Verify Access Token
 export const verifyAccessToken = (token: string): JwtPayload => {
-    const decoded = jwt.verify(token, jwtSecret)
-    if (typeof decoded === "string") {
-        throw new Error("Invalid token payload")
+    try {
+        const decoded = jwt.verify(token, jwtSecret)
+        if (typeof decoded === "string") {
+            throw new CustomError("Invalid access token payload", 401)
+        }
+        return decoded as JwtPayload
+    } catch (err) {
+        if (err instanceof TokenExpiredError) {
+            throw new CustomError("Access token expired", 401)
+        }
+        throw new CustomError("Invalid access token", 401)
     }
-    return decoded as JwtPayload
 }
 
 // Verify Refresh Token

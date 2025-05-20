@@ -1,6 +1,7 @@
 import cors from "cors"
 import express, { Request, Response } from "express"
 import helmet from "helmet"
+import http from "http"
 import morgan from "morgan"
 
 import { ALLOWED_ORIGINS, SERVICE_CONFIG } from "./config/AppConstant"
@@ -10,12 +11,12 @@ import { errorHandler } from "./errors/errorHandler"
 import logger from "./logger/logger"
 import appRateLimiter from "./utils/appRateLimiter"
 
-// Create app
+// Create Express app
 const app = express()
 const serviceName = SERVICE_CONFIG.name
 const servicePort = Number(SERVICE_CONFIG.port) || 1234
 
-// CORS
+// CORS setup
 const corsOptions: cors.CorsOptions = {
     origin: (origin, callback) => {
         if (!origin || ALLOWED_ORIGINS.includes(origin)) {
@@ -29,38 +30,38 @@ const corsOptions: cors.CorsOptions = {
     credentials: true,
 }
 
-// Middleware
+// Global middleware
 app.use(cors(corsOptions))
 app.use(helmet())
 app.use(express.json({ limit: "3mb" }))
 app.use(appRateLimiter)
 app.use(
     morgan("dev", {
-        stream: { write: (message) => logger.info(message.trim()) },
+        stream: { write: (msg) => logger.info(msg.trim()) },
     })
 )
 
-// Routes
+// Mount routes
 import authRoutes from "@/routes/auth.routes"
 import logRoutes from "@/routes/logs.routes"
 
 app.use("/api/auth", authRoutes)
 app.use("/api/logs", logRoutes)
 
-// Health check route
+// Health check
 app.get("/health", async (_req: Request, res: Response) => {
     try {
         await redisClient.ping()
         res.status(200).json({ msg: "Service health is ok!" })
-    } catch (error: any) {
+    } catch (err: any) {
         res.status(500).json({
             msg: "Health check failed",
-            error: error.message,
+            error: err.message,
         })
     }
 })
 
-// 404
+// 404 handler
 app.use((_req: Request, res: Response) => {
     res.status(404).json({ msg: "Route not found!" })
 })
@@ -68,34 +69,56 @@ app.use((_req: Request, res: Response) => {
 // Global error handler
 app.use(errorHandler)
 
-// Start server
-async function initializeServer() {
+// Create HTTP server
+const server = http.createServer(app)
+
+async function startServer() {
     try {
+        // Initialize DB (Redis already auto-connects)
         await Database.getInstance()
 
-        // only execute for first time
-        // ensureTablesExist()
-
-        app.listen(servicePort, () => {
-            console.log(`${serviceName} is listening on port ${servicePort}`)
+        server.listen(servicePort, () => {
+            logger.info(`${serviceName} is listening on port ${servicePort}`)
         })
-    } catch (error: any) {
-        console.error("❌ Failed to start server:", error.message)
+    } catch (err: any) {
+        // Log full stack
+        logger.error("❌ Failed to start server", err.stack || err)
         process.exit(1)
     }
 }
 
 // Graceful shutdown
-const shutdown = async () => {
-    await redisClient.disconnect()
-    await Database.close()
-    console.log("✅ Redis and MySQL connections closed.")
-    process.exit(0)
+async function shutdown() {
+    logger.info("⚙️  Shutting down gracefully…")
+
+    server.close(async (closeErr) => {
+        if (closeErr) {
+            logger.error("Error closing HTTP server", closeErr)
+            process.exit(1)
+        }
+        try {
+            redisClient.destroy()
+            await Database.close()
+            logger.info("✅ Closed Redis and MySQL connections.")
+            process.exit(0)
+        } catch (cleanupErr: any) {
+            logger.error("Error during shutdown cleanup", cleanupErr)
+            process.exit(1)
+        }
+    })
+
+    // Force exit if not closed within 10 seconds
+    setTimeout(() => {
+        logger.warn("💥 Shutdown timed out, forcing exit.")
+        process.exit(1)
+    }, 10_000)
 }
 
+// Listen for termination signals
 process.on("SIGINT", shutdown)
 process.on("SIGTERM", shutdown)
 
-initializeServer()
+// Start everything
+startServer()
 
 export default app

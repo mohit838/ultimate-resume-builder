@@ -8,7 +8,7 @@ export const endpoints = {
         signUp: "auth/signup",
         logout: "auth/logout",
         refreshToken: "auth/refresh",
-        testRoleBase: "auth/test-role-base",
+        testRoleBase: "auth/admin-only",
         enable2fa: "auth/enable-2fa",
         verify2fa: "auth/verify-2fa",
         otpTtl: "auth/otp-ttl",

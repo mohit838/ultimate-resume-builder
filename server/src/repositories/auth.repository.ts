@@ -1,6 +1,6 @@
 import Database from "@/config/dbConfig"
 import { ISignUp, IUser } from "@/models/auth.model"
-import { nanoid } from "@/utils/nanoIdGenereate"
+import { nanoid } from "@/utils/nanoIdGenerate"
 import { ResultSetHeader, RowDataPacket } from "mysql2"
 
 interface UserRow extends IUser, RowDataPacket {

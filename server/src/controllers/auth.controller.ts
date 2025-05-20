@@ -1,5 +1,6 @@
 import { CustomError } from "@/errors/CustomError"
 import { successResponse } from "@/helper/ApiResponse"
+import logger from "@/logger/logger"
 import {
     createSignUpService,
     generate2FAService,
@@ -33,9 +34,13 @@ export const signUp = async (req: Request, res: Response) => {
 export const logIn = async (req: Request, res: Response) => {
     const { email, password } = req.body
 
-    const loginUser = await userLoginService({ email, password }, req)
-
-    return successResponse(res, loginUser, "User login successfully", 200)
+    try {
+        const loginUser = await userLoginService({ email, password }, req)
+        return successResponse(res, loginUser, "User login successfully", 200)
+    } catch (err) {
+        logger.error(`Login failed for ${req.body.email}`, { err })
+        throw err
+    }
 }
 
 // 3. refresh token generations
@@ -44,8 +49,6 @@ export const refreshToken = async (req: Request, res: Response) => {
     const accessUser = req.user as JwtPayload
 
     const tokenSet = await userRefreshTokenService(refreshToken, accessUser)
-
-    console.log(tokenSet)
 
     return res.status(200).json({
         success: true,

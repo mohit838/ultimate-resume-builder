@@ -3,7 +3,7 @@ import redisClient from "@/config/redisClient"
 import { CustomError } from "@/errors/CustomError"
 import { JwtPayload, verifyAccessToken } from "@/utils/jwt"
 import { NextFunction, Request, Response } from "express"
-import jwt from "jsonwebtoken"
+import jwt, { JsonWebTokenError } from "jsonwebtoken"
 
 const jwtSecret = SERVICE_SECURITIES.jwt_secret
 
@@ -93,7 +93,8 @@ export const allowExpiredAccessToken = async (
         req.user = decoded as JwtPayload
         return next()
     } catch (err) {
-        console.error("Failed to decode access token", err)
-        throw new CustomError("Invalid or tampered token", 401)
+        if (err instanceof JsonWebTokenError)
+            throw new CustomError("Tampered token", 401)
+        throw err
     }
 }

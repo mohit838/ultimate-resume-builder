@@ -1,44 +1,32 @@
 import { useResetPasswordMutation } from '@/hooks/useResetPassword'
+import useResetPassStore from '@/stores/useResetPassStore'
 import { LockOutlined } from '@ant-design/icons'
 import { Button, Card, Form, Input, Typography } from 'antd'
-import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 const { Title, Text } = Typography
 
 const ResetPasswordPage = () => {
-    const navigate = useNavigate()
-
-    const email = localStorage.getItem('email_forgot') || ''
-
-    const otp_verified =
-        localStorage.getItem('otp_verified') === 'true' || false
-
-    if (!otp_verified || !email) {
-        navigate('/login')
-    }
-
     const [form] = Form.useForm()
     const { mutate, isPending } = useResetPasswordMutation()
+    const navigate = useNavigate()
+    const { resetEmail } = useResetPassStore()
 
     const handleReset = (values: {
         password: string
         confirmPassword: string
     }) => {
-        if (!email) return
+        if (!resetEmail) return
 
         mutate({
-            email,
+            email: resetEmail,
             password: values.password,
             confirmPassword: values.confirmPassword,
         })
-    }
 
-    useEffect(() => {
-        if (!otp_verified || !email) {
-            navigate('/login', { replace: true })
-        }
-    }, [otp_verified, email, navigate])
+        navigate('/login')
+        form.resetFields()
+    }
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 px-4">
@@ -51,7 +39,7 @@ const ResetPasswordPage = () => {
                 </div>
 
                 <Form
-                    disabled={!otp_verified || !email}
+                    disabled={!resetEmail}
                     layout="vertical"
                     form={form}
                     onFinish={handleReset}

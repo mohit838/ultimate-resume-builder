@@ -1,7 +1,7 @@
 import api from '@/api/axios'
 import { useNotification } from '@/hooks/useNotification'
 import { endpoints } from '@/services/endpoints'
-import useSignUpStore from '@/stores/useSignUp'
+import useSignUpStore from '@/stores/useSignUpStore'
 import { handleAxiosError } from '@/utils/handleAxiosError'
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
 import { Button, Card, Form, Input, Typography } from 'antd'

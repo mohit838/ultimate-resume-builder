@@ -2,11 +2,9 @@ import { useNotification } from "@/hooks/useNotification"
 import { resendOtpApi, verifyOtpApi } from "@/services/auth/otp"
 import { useMutation } from "@tanstack/react-query"
 import { AxiosError } from "axios"
-import { useNavigate } from "react-router-dom"
 
 export const useVerifyOtp = (email: string) => {
     const { success, error } = useNotification()
-    const navigate = useNavigate()
 
     return useMutation({
         mutationFn: (otp: string) => {
@@ -18,7 +16,6 @@ export const useVerifyOtp = (email: string) => {
         },
         onSuccess: () => {
             success("OTP verified!")
-            navigate("/login")
         },
         onError: (err: AxiosError<{ message?: string }>) => {
             error(err?.response?.data?.message || "Invalid OTP or expired.")

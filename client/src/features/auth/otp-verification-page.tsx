@@ -1,7 +1,8 @@
 import api from '@/api/axios'
 import { useResendOtp, useVerifyOtp } from '@/hooks/useOtpMutation'
 import { endpoints } from '@/services/endpoints'
-import useSignUpStore from '@/stores/useSignUp'
+import useResetPassStore from '@/stores/useResetPassStore'
+import useSignUpStore from '@/stores/useSignUpStore'
 import { Button, Card, Form, Input, Typography } from 'antd'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -10,22 +11,25 @@ const { Title, Text } = Typography
 
 const OtpVerificationPage = () => {
     const [form] = Form.useForm()
-    const { email } = useSignUpStore()
+    const { email, isSignedUp } = useSignUpStore()
+    const { resetEmail, isResetPass } = useResetPassStore()
     const navigate = useNavigate()
 
     // State to manage OTP resend button and countdown
     const [resendDisabled, setResendDisabled] = useState(true)
     const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
 
-    const verifyOtpMutation = useVerifyOtp(email ?? '')
-    const resendOtpMutation = useResendOtp(email ?? '')
+    const forOtpEmail = isResetPass ? resetEmail : email
+
+    const verifyOtpMutation = useVerifyOtp(forOtpEmail)
+    const resendOtpMutation = useResendOtp(forOtpEmail)
 
     // Fetch TTL from backend on mount
     useEffect(() => {
         const fetchTTL = async () => {
             try {
                 const { data } = await api.get(`${endpoints.auth.otpTtl}`, {
-                    params: { email },
+                    params: { email: forOtpEmail },
                 })
 
                 if (!data) {
@@ -46,10 +50,10 @@ const OtpVerificationPage = () => {
             }
         }
 
-        if (email) {
+        if (forOtpEmail) {
             fetchTTL()
         }
-    }, [email])
+    }, [forOtpEmail])
 
     // Countdown timer effect
     useEffect(() => {
@@ -86,10 +90,18 @@ const OtpVerificationPage = () => {
     }
 
     useEffect(() => {
-        if (!email) {
+        if (isResetPass && verifyOtpMutation.isSuccess) {
+            navigate('/reset-password', { replace: true })
+        } else if (isSignedUp && verifyOtpMutation.isSuccess) {
             navigate('/login', { replace: true })
         }
-    }, [email, navigate])
+    }, [
+        forOtpEmail,
+        navigate,
+        isResetPass,
+        verifyOtpMutation.isSuccess,
+        isSignedUp,
+    ])
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 px-4">

@@ -10,10 +10,11 @@ export const useForgotPasswordMutation = () => {
 
     return useMutation({
         mutationFn: requestForgotPasswordApi,
-        onSuccess: (_, email) => {
-            notify.success("OTP sent to your email!")
-            localStorage.setItem("email_forgot", email)
-            navigate("/verify-otp")
+        onSuccess: (data) => {
+            if (data?.success) {
+                notify.success("OTP sent to your email!")
+                navigate("/verify-otp")
+            }
         },
         onError: (error: AxiosError<{ message?: string }>) => {
             notify.error(error?.response?.data?.message || "Failed to send OTP")

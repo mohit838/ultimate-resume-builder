@@ -1,16 +1,24 @@
 import { useForgotPasswordMutation } from '@/hooks/useForgotPassword'
+import useResetPassStore from '@/stores/useResetPassStore'
 import { MailOutlined } from '@ant-design/icons'
 import { Button, Card, Form, Input, Typography } from 'antd'
 
 const { Title, Text } = Typography
 
 const ResetPasswordRequestPage = () => {
+    const [form] = Form.useForm()
     const { mutate, isPending } = useForgotPasswordMutation()
+    const { setResetEmail } = useResetPassStore()
 
     const handleReset = (values: { email: string }) => {
         localStorage.removeItem('auth-storage')
         localStorage.removeItem('refresh_token')
-        mutate(values.email)
+
+        if (values?.email) {
+            setResetEmail(values.email)
+            mutate(values.email)
+            form.resetFields()
+        }
     }
 
     return (
@@ -19,11 +27,11 @@ const ResetPasswordRequestPage = () => {
                 <div className="text-center mb-6">
                     <Title level={2}>Reset Your Password Request</Title>
                     <Text type="secondary">
-                        Please enter a registerd email below
+                        Please enter a registered email below
                     </Text>
                 </div>
 
-                <Form layout="vertical" onFinish={handleReset}>
+                <Form form={form} layout="vertical" onFinish={handleReset}>
                     <Form.Item
                         name="email"
                         label="Your registered email"

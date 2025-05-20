@@ -11,97 +11,125 @@ const { Title, Text } = Typography
 
 const OtpVerificationPage = () => {
     const [form] = Form.useForm()
-    const { email, isSignedUp } = useSignUpStore()
+    const { email: storeEmail, isSignedUp } = useSignUpStore()
     const { resetEmail, isResetPass } = useResetPassStore()
     const navigate = useNavigate()
 
-    // State to manage OTP resend button and countdown
-    const [resendDisabled, setResendDisabled] = useState(true)
-    const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
+    // 1) Maintain otpEmail in state, init from store or fallback to localStorage
+    const initialEmail =
+        (isResetPass ? resetEmail : storeEmail) ||
+        localStorage.getItem('otpEmail') ||
+        ''
+    const [otpEmail, setOtpEmail] = useState<string>(initialEmail)
 
-    const forOtpEmail = isResetPass ? resetEmail : email
-
-    const verifyOtpMutation = useVerifyOtp(forOtpEmail)
-    const resendOtpMutation = useResendOtp(forOtpEmail)
-
-    // Fetch TTL from backend on mount
+    // Whenever we get a “fresh” email from the store, persist it
     useEffect(() => {
-        const fetchTTL = async () => {
-            try {
-                const { data } = await api.get(`${endpoints.auth.otpTtl}`, {
-                    params: { email: forOtpEmail },
-                })
+        const fromStore = isResetPass ? resetEmail : storeEmail
+        if (fromStore) {
+            setOtpEmail(fromStore)
+            localStorage.setItem('otpEmail', fromStore)
+        }
+    }, [resetEmail, storeEmail, isResetPass])
 
-                if (!data) {
-                    console.error('No data received from OTP TTL endpoint')
-                    return
-                }
+    // If there's ever no email (unlikely), clear storage
+    useEffect(() => {
+        if (!otpEmail) {
+            localStorage.removeItem('otpEmail')
+        }
+    }, [otpEmail])
+
+    // OTP mutations (now keyed on stable otpEmail)
+    const verifyOtpMutation = useVerifyOtp(otpEmail)
+    const resendOtpMutation = useResendOtp(otpEmail)
+
+    // UI state for TTL
+    const [ttlLoading, setTtlLoading] = useState(true)
+    const [resendDisabled, setResendDisabled] = useState(false)
+    const [secondsLeft, setSecondsLeft] = useState(0)
+
+    // 2) Fetch TTL when otpEmail is set
+    useEffect(() => {
+        if (!otpEmail) {
+            setTtlLoading(false)
+            setResendDisabled(false)
+            return
+        }
+
+        let cancelled = false
+
+        const fetchTTL = async () => {
+            setTtlLoading(true)
+            try {
+                const { data } = await api.get(endpoints.auth.otpTtl, {
+                    params: { email: otpEmail },
+                })
                 const ttl = data?.model?.ttl ?? 0
-                if (ttl > 0) {
-                    setResendDisabled(true)
-                    setSecondsLeft(ttl)
-                } else {
-                    setResendDisabled(false)
+
+                if (!cancelled) {
+                    if (ttl > 0) {
+                        setResendDisabled(true)
+                        setSecondsLeft(ttl)
+                    } else {
+                        setResendDisabled(false)
+                        setSecondsLeft(0)
+                    }
                 }
-                localStorage.setItem('otp_verified', 'false')
             } catch (err) {
                 console.error('Failed to fetch TTL', err)
-                setResendDisabled(false)
+                if (!cancelled) {
+                    setResendDisabled(false)
+                    setSecondsLeft(0)
+                }
+            } finally {
+                if (!cancelled) setTtlLoading(false)
             }
         }
 
-        if (forOtpEmail) {
-            fetchTTL()
+        fetchTTL()
+        return () => {
+            cancelled = true
         }
-    }, [forOtpEmail])
+    }, [otpEmail])
 
-    // Countdown timer effect
+    // 3) Countdown effect
     useEffect(() => {
-        if (resendDisabled && secondsLeft !== null) {
-            const interval = setInterval(() => {
-                setSecondsLeft((prev) => {
-                    if (prev && prev <= 1) {
-                        clearInterval(interval)
-                        setResendDisabled(false)
-                        return 0
-                    }
-                    return prev! - 1
-                })
-            }, 1000)
-
-            return () => clearInterval(interval)
-        }
+        if (!resendDisabled || secondsLeft <= 0) return
+        const interval = setInterval(() => {
+            setSecondsLeft((prev) => {
+                if (prev <= 1) {
+                    clearInterval(interval)
+                    setResendDisabled(false)
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+        return () => clearInterval(interval)
     }, [resendDisabled, secondsLeft])
 
-    // Form submit
+    // 4) Verify OTP handler
     const handleVerifyOtp = ({ otp }: { otp: string }) => {
         verifyOtpMutation.mutate(otp)
     }
 
-    // Resend OTP click
+    // 5) Resend OTP handler
     const handleResendOtp = () => {
         resendOtpMutation.mutate(undefined, {
-            onSuccess: (data) => {
-                const ttl = data?.model?.ttl ?? 180
+            onSuccess: (resp) => {
+                const ttl = resp?.model?.ttl ?? 600
                 setResendDisabled(true)
                 setSecondsLeft(ttl)
             },
         })
     }
 
+    // 6) Redirect on success
     useEffect(() => {
-        if (isResetPass && verifyOtpMutation.isSuccess) {
-            navigate('/reset-password', { replace: true })
-        } else if (isSignedUp && verifyOtpMutation.isSuccess) {
-            navigate('/login', { replace: true })
+        if (verifyOtpMutation.isSuccess) {
+            if (isResetPass) navigate('/reset-password', { replace: true })
+            else if (isSignedUp) navigate('/login', { replace: true })
         }
-    }, [
-        forOtpEmail,
-        navigate,
-        isResetPass,
-        verifyOtpMutation.isSuccess,
-        isSignedUp,
-    ])
+    }, [verifyOtpMutation.isSuccess, isResetPass, isSignedUp, navigate])
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 px-4">
@@ -109,7 +137,7 @@ const OtpVerificationPage = () => {
                 <div className="text-center mb-6">
                     <Title level={3}>Verify OTP</Title>
                     <Text type="secondary">
-                        We sent a code to your email: <strong>{email}</strong>
+                        We sent a code to your registered email.
                     </Text>
                 </div>
 
@@ -121,6 +149,10 @@ const OtpVerificationPage = () => {
                             {
                                 required: true,
                                 message: 'Please enter the OTP code',
+                            },
+                            {
+                                pattern: /^\d{6}$/,
+                                message: 'OTP must be a 6-digit number',
                             },
                         ]}
                     >
@@ -141,7 +173,9 @@ const OtpVerificationPage = () => {
                 </Form>
 
                 <div className="text-center text-sm mt-4">
-                    {resendDisabled ? (
+                    {ttlLoading ? (
+                        <Text type="secondary">Checking timer…</Text>
+                    ) : resendDisabled && secondsLeft > 0 ? (
                         <Text type="secondary">
                             You can resend code in {secondsLeft}s
                         </Text>

@@ -17,184 +17,228 @@ import {
 import { JwtPayload } from "@/utils/jwt"
 import { Request, Response } from "express"
 
-// 1. signup
+// 1. Signup
 export const signUp = async (req: Request, res: Response) => {
-    const { username, email, password } = req.body
-
-    const newUser = await createSignUpService({
-        name: username,
-        email,
-        password,
-    })
-
-    return successResponse(res, newUser, "Need to verify OTP", 200)
-}
-
-// 2. login
-export const logIn = async (req: Request, res: Response) => {
-    const { email, password } = req.body
-
     try {
-        const loginUser = await userLoginService({ email, password }, req)
-        return successResponse(res, loginUser, "User login successfully", 200)
+        const { username, email, password } = req.body
+        const newUser = await createSignUpService({
+            name: username,
+            email,
+            password,
+        })
+        return successResponse(res, newUser, "OTP sent; please verify", 200)
     } catch (err) {
-        logger.error(`Login failed for ${req.body.email}`, { err })
+        logger.error("signUp error", {
+            email: req.body.email,
+            err,
+        })
         throw err
     }
 }
 
-// 3. refresh token generations
+// 2. Login
+export const logIn = async (req: Request, res: Response) => {
+    try {
+        const { email, password } = req.body
+        const loginUser = await userLoginService({ email, password }, req)
+        return successResponse(res, loginUser, "User logged in", 200)
+    } catch (err) {
+        logger.error("logIn error", {
+            email: req.body.email,
+            err,
+        })
+        throw err
+    }
+}
+
+// 3. Refresh token
 export const refreshToken = async (req: Request, res: Response) => {
-    const refreshToken = req.headers["x-refresh-token"]
-    const accessUser = req.user as JwtPayload
+    try {
+        const refreshTokenHeader = req.headers["x-refresh-token"]
+        const accessUser = req.user as JwtPayload
+        const tokenSet = await userRefreshTokenService(
+            refreshTokenHeader,
+            accessUser
+        )
 
-    const tokenSet = await userRefreshTokenService(refreshToken, accessUser)
-
-    return res.status(200).json({
-        success: true,
-        message: "Token refreshed",
-        model: {
-            ...tokenSet,
-            user: {
-                id: accessUser.id,
-                email: accessUser.email,
-                role: accessUser.role,
+        // Use successResponse for consistency
+        return successResponse(
+            res,
+            {
+                ...tokenSet,
+                user: {
+                    id: accessUser.id,
+                    email: accessUser.email,
+                    role: accessUser.role,
+                },
             },
-        },
-    })
+            "Token refreshed",
+            200
+        )
+    } catch (err) {
+        logger.error("refreshToken error", {
+            user: req.user,
+            err,
+        })
+        throw err
+    }
 }
 
-// 4. logout
+// 4. Logout
 export const logout = async (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization
-
-    const logoutUser = await userLogOutService(authHeader)
-
-    return successResponse(
-        res,
-        null,
-        logoutUser ? "Logged out successfully" : "Facing issues!!",
-        200
-    )
+    try {
+        const authHeader = req.headers.authorization
+        const result = await userLogOutService(authHeader)
+        return successResponse(
+            res,
+            null,
+            result ? "Logged out successfully" : "Logout failed",
+            200
+        )
+    } catch (err) {
+        logger.error("logout error", {
+            user: req.user,
+            err,
+        })
+        throw err
+    }
 }
 
-// 5. otp verifications
+// 5. Verify OTP
 export const verifyOtp = async (req: Request, res: Response) => {
-    const { email, otp } = req.body
-
-    const getLoginInfoAfterVerify = await userVerifyOtpService({ email, otp })
-
-    return successResponse(
-        res,
-        getLoginInfoAfterVerify,
-        "OTP verified successfully",
-        200
-    )
+    try {
+        const { email, otp } = req.body
+        const payload = await userVerifyOtpService({ email, otp })
+        return successResponse(res, payload, "OTP verified", 200)
+    } catch (err) {
+        logger.error("verifyOtp error", {
+            email: req.body.email,
+            err,
+        })
+        throw err
+    }
 }
 
-// 6. request otp
+// 6. Resend OTP
 export const requestOtp = async (req: Request, res: Response) => {
-    const { email } = req.body
-
-    const getLoginInfoAfterVerify = await userAgainRequestOtpService({ email })
-
-    return successResponse(
-        res,
-        getLoginInfoAfterVerify,
-        getLoginInfoAfterVerify?.message,
-        200
-    )
+    try {
+        const { email } = req.body
+        const payload = await userAgainRequestOtpService({ email })
+        return successResponse(res, payload, payload?.message, 200)
+    } catch (err) {
+        logger.error("requestOtp error", {
+            email: req.body.email,
+            err,
+        })
+        throw err
+    }
 }
 
-// 7. test role base auth
+// 7. Role‐test endpoint
 export const testRoleBase = async (req: Request, res: Response) => {
     return successResponse(res, null, "Role test successful!", 200)
 }
 
-// 8. 2FA - Generate
+// 8. Generate Google 2FA QR
 export const generate2FA = async (req: Request, res: Response) => {
-    const userEmail = req?.user?.email
-    if (!userEmail) throw new CustomError("User does not exist!", 400)
-
-    const qrCodeDataUrl = await generate2FAService(userEmail)
-
-    return successResponse(
-        res,
-        { qrCode: qrCodeDataUrl },
-        "Scan QR to enable 2FA"
-    )
+    try {
+        const email = req.user?.email
+        if (!email) throw new CustomError("User not found", 400)
+        const { qrCode, secret } = await generate2FAService(email)
+        return successResponse(
+            res,
+            { qrCode, secret },
+            "Scan QR to enable 2FA",
+            200
+        )
+    } catch (err) {
+        logger.error("generate2FA error", {
+            user: req.user,
+            err,
+        })
+        throw err
+    }
 }
 
-// 9. 2FA - Verify
+// 9. Verify Google 2FA token
 export const verifyGoogle2FA = async (req: Request, res: Response) => {
-    const { token } = req.body
-    const email = req?.user?.email
-
-    if (!email || !token) {
-        throw new CustomError("Email and token are required", 400)
+    try {
+        const { token } = req.body
+        const email = req.user?.email
+        if (!email || !token) {
+            throw new CustomError("Email and token are required", 400)
+        }
+        await verifyGoogle2FAService(email, token)
+        return successResponse(res, null, "2FA verified", 200)
+    } catch (err) {
+        logger.error("verifyGoogle2FA error", {
+            user: req.user,
+            err,
+        })
+        throw err
     }
-
-    await verifyGoogle2FAService(email, token)
-
-    return successResponse(res, null, "2FA verification successful", 200)
 }
 
-// 10. Reset password request
+// 10. Reset password
 export const requestResetPassword = async (req: Request, res: Response) => {
-    const { email, password, confirmPassword } = req.body
-
-    if (!email || password !== confirmPassword) {
-        throw new CustomError("Email and password are required", 400)
+    try {
+        const { email, password, confirmPassword } = req.body
+        if (!email || password !== confirmPassword) {
+            throw new CustomError("Email and matching passwords required", 400)
+        }
+        await requestForResetPasswordService(email, password, confirmPassword)
+        return successResponse(res, null, "Password reset successful", 200)
+    } catch (err) {
+        logger.error("requestResetPassword error", {
+            email: req.body.email,
+            err,
+        })
+        throw err
     }
-
-    await requestForResetPasswordService(email, password, confirmPassword)
-
-    return successResponse(res, null, "Reset password successfully", 200)
 }
 
-// 11. Forgot password request
+// 11. Forgot password (send OTP)
 export const requestOtpForForgotPassword = async (
     req: Request,
     res: Response
 ) => {
-    const { email } = req.body
-
-    if (!email) {
-        throw new CustomError("Email is required", 400)
+    try {
+        const { email } = req.body
+        if (!email) {
+            throw new CustomError("Email is required", 400)
+        }
+        const payload = await requestOtpForForgotPasswordService(email)
+        return successResponse(res, payload, payload?.message, 200)
+    } catch (err) {
+        logger.error("requestOtpForForgotPassword error", {
+            email: req.body.email,
+            err,
+        })
+        throw err
     }
-
-    const forgotRequestMsg = await requestOtpForForgotPasswordService(email)
-
-    return successResponse(
-        res,
-        forgotRequestMsg,
-        forgotRequestMsg?.message,
-        200
-    )
 }
 
-// 12. ttl for otp
+// 12. Get OTP TTL
 export const getOtpTtl = async (req: Request, res: Response) => {
-    const { email } = req.query
+    try {
+        const email = req.query.email as string
+        if (!email) {
+            throw new CustomError("Email query parameter is required", 400)
+        }
 
-    if (typeof email !== "string") {
-        throw new CustomError("Invalid email format", 400)
-    }
+        const ttl = await getOtpTtlService(email)
 
-    const ttl = await getOtpTtlService(email)
+        if (ttl > 0) {
+            return successResponse(res, { ttl }, "OTP is valid", 200)
+        }
 
-    if (!ttl) {
-        throw new CustomError("OTP TTL not found", 404)
+        const message = ttl === 0 ? "OTP expired" : "OTP not found"
+        return successResponse(res, null, message, 200)
+    } catch (err) {
+        logger.error("getOtpTtl error", {
+            email: req.query.email,
+            err,
+        })
+        throw err
     }
-    if (ttl === 0) {
-        return successResponse(res, null, "OTP expired")
-    }
-    if (ttl < 0) {
-        return successResponse(res, null, "OTP not found")
-    }
-    if (ttl > 0) {
-        return successResponse(res, null, "OTP is valid")
-    }
-    // If ttl is found and greater than 0, return the ttl
-    return successResponse(res, { ttl }, "Fetched OTP TTL")
 }

@@ -1,30 +1,18 @@
 import { useDisable2FA, useGenerate2FA, useVerify2FA } from '@/hooks/use2fa'
 import useAuthStore from '@/stores/useAuthStore'
 import { Button, Card, Form, Input, Spin, Typography } from 'antd'
-import React, { useEffect } from 'react'
+import React from 'react'
 
 const { Title, Text } = Typography
 
 const Enable2faPage: React.FC = () => {
-    const [form] = Form.useForm()
-    const { token, user } = useAuthStore()
+    const { user } = useAuthStore()
     const gen2FA = useGenerate2FA()
     const verify2FA = useVerify2FA()
     const disable2FA = useDisable2FA()
+    const [form] = Form.useForm()
 
-    // If 2FA is already on, we won’t fetch QR/secret
-    useEffect(() => {
-        if (token && !user?.googleAuthEnabled) {
-            gen2FA.mutate()
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [token, user?.googleAuthEnabled])
-
-    const onFinish = ({ code }: { code: string }) => {
-        verify2FA.mutate(code)
-    }
-
-    // If 2FA is enabled, show the disable UI
+    // 1) If 2FA is enabled, show disable button
     if (user?.googleAuthEnabled) {
         return (
             <div
@@ -38,12 +26,10 @@ const Enable2faPage: React.FC = () => {
                         <Button
                             danger
                             block
-                            onClick={() => disable2FA.mutate()}
+                            loading={disable2FA.isPending}
+                            onClick={() => disable2FA}
                         >
-                            <Text strong>⚠️</Text>
-                            <Text strong className="ml-2">
-                                Disable 2FA
-                            </Text>
+                            Disable 2FA
                         </Button>
                     </div>
                 </Card>
@@ -51,7 +37,39 @@ const Enable2faPage: React.FC = () => {
         )
     }
 
-    // Otherwise show the enable flow
+    // 2) Not enabled => if no setup yet, show a “Generate” button
+    const setup = gen2FA.data
+    if (!setup) {
+        return (
+            <div
+                className="flex justify-center items-center px-4"
+                style={{ minHeight: 'calc(100vh - 4rem)' }}
+            >
+                <Card className="w-full max-w-md p-6 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200">
+                    <Title level={3}>Enable Two-Factor Authentication</Title>
+                    <Text>
+                        Click below to generate a new 2FA setup (QR code +
+                        secret).
+                    </Text>
+                    <div className="mt-6">
+                        <Button
+                            type="primary"
+                            block
+                            loading={gen2FA.isPending}
+                            onClick={() => gen2FA.mutate()}
+                        >
+                            Generate 2FA Setup
+                        </Button>
+                    </div>
+                </Card>
+            </div>
+        )
+    }
+
+    // 3) Setup exists => show QR, secret, and code form
+    const { qrCode, secret } = setup
+    const onFinish = ({ code }: { code: string }) => verify2FA.mutate(code)
+
     return (
         <div
             className="flex justify-center items-center px-4"
@@ -64,20 +82,18 @@ const Enable2faPage: React.FC = () => {
                 <div className="text-center my-4">
                     {gen2FA.isPending ? (
                         <Spin />
-                    ) : gen2FA.data?.qrCode ? (
+                    ) : (
                         <img
-                            src={gen2FA.data.qrCode}
+                            src={qrCode}
                             alt="2FA QR Code"
                             className="mx-auto"
                         />
-                    ) : null}
+                    )}
                 </div>
 
-                {gen2FA.data?.secret && (
-                    <Text copyable code className="block text-center mb-4">
-                        {gen2FA.data.secret}
-                    </Text>
-                )}
+                <Text copyable code className="block text-center mb-4">
+                    {secret}
+                </Text>
 
                 <Form
                     form={form}

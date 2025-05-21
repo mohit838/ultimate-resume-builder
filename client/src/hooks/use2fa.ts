@@ -4,7 +4,7 @@ import {
     verify2FASetup,
 } from "@/services/settings/2fa/2faService"
 import useAuthStore from "@/stores/useAuthStore"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { AxiosError } from "axios"
 import { useNavigate } from "react-router-dom"
 import { useNotification } from "./useNotification"
@@ -58,6 +58,7 @@ export function useDisable2FA() {
     const user = useAuthStore((s) => s.user)!
     const token = useAuthStore((s) => s.token)!
     const navigate = useNavigate()
+    const queryClient = useQueryClient()
 
     return useMutation<void, AxiosError>({
         mutationKey: ["disable2FA"],
@@ -65,6 +66,7 @@ export function useDisable2FA() {
         onSuccess: () => {
             notify.success("Two-factor authentication disabled.")
             login(token, { ...user, googleAuthEnabled: false })
+            queryClient.invalidateQueries({ queryKey: ["generate2FA"] })
             navigate("/settings/enable-2fa", { replace: true })
         },
         onError: (err: AxiosError) => {

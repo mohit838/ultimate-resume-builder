@@ -8,6 +8,10 @@ interface UserRow extends IUser, RowDataPacket {
     role: string
 }
 
+interface TwoFAFlag extends RowDataPacket {
+    google_auth_enabled: 0 | 1
+}
+
 // Create a new user and return its nano_id
 export const signUp = async (input: ISignUp): Promise<string> => {
     const id = generateNanoId()
@@ -128,6 +132,45 @@ export const setNewPasswordAfterReset = async (
     } catch (err: any) {
         throw new CustomError(
             err.message || "Database error setting new password",
+            500
+        )
+    }
+}
+
+export const isTwoFAEnabled = async (email: string): Promise<boolean> => {
+    const db = await Database.getInstance()
+    try {
+        const [rows] = await db.execute<TwoFAFlag[]>(
+            `SELECT google_auth_enabled FROM users WHERE email = ?`,
+            [email]
+        )
+        return rows.length > 0 && rows[0].google_auth_enabled === 1
+    } catch (err: any) {
+        throw new CustomError(
+            err.message || "Database error checking 2FA status",
+            500
+        )
+    }
+}
+
+export const disableTwoFA = async (email: string): Promise<void> => {
+    const db = await Database.getInstance()
+    try {
+        const [result] = await db.execute<ResultSetHeader>(
+            `
+      UPDATE users
+      SET google_auth_enabled = FALSE,
+          google_auth_secret = NULL
+      WHERE email = ?
+      `,
+            [email]
+        )
+        if (result.affectedRows === 0) {
+            throw new CustomError("No user found to disable 2FA", 404)
+        }
+    } catch (err: any) {
+        throw new CustomError(
+            err.message || "Database error disabling 2FA",
             500
         )
     }

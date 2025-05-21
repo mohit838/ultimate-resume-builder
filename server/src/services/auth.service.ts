@@ -385,3 +385,16 @@ export async function verifyGoogle2FAService(
         throw new CustomError("Invalid 2FA token", 401)
     }
 }
+
+export const disable2FAService = async (email: string): Promise<void> => {
+    if (!email) {
+        throw new CustomError("Email is required to disable 2FA", 400)
+    }
+
+    const enabled = await repo.isTwoFAEnabled(email)
+    if (!enabled) {
+        throw new CustomError("2FA is not enabled for this user", 400)
+    }
+
+    await repo.disableTwoFA(email)
+}

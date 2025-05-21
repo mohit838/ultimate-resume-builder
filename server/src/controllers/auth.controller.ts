@@ -3,6 +3,7 @@ import { successResponse } from "@/helper/ApiResponse"
 import logger from "@/logger/logger"
 import {
     createSignUpService,
+    disable2FAService,
     generate2FAService,
     getOtpTtlService,
     requestForResetPasswordService,
@@ -239,6 +240,22 @@ export const getOtpTtl = async (req: Request, res: Response) => {
             email: req.query.email,
             err,
         })
+        throw err
+    }
+}
+
+// 13. Disable Google 2FA
+export const disable2FA = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const email = req.user?.email
+        if (!email) {
+            throw new CustomError("Unauthorized: no email present", 401)
+        }
+
+        await disable2FAService(email)
+        return successResponse(res, null, "2FA disabled", 200)
+    } catch (err) {
+        logger.error("disable2FA error", { user: req.user, err })
         throw err
     }
 }

@@ -16,6 +16,7 @@ import { validate } from "@/middlewares/validations/auth.validation"
 import express, { NextFunction, Request, Response } from "express"
 
 import {
+    disable2FA,
     generate2FA,
     getOtpTtl,
     logIn,
@@ -118,6 +119,7 @@ router.get(
 // 2FA (Google Authenticator)
 router.post("/enable-2fa", requireAuth, asyncHandler(generate2FA))
 router.post("/verify-2fa", requireAuth, asyncHandler(verifyGoogle2FA))
+router.post("/disable-2fa", requireAuth, asyncHandler(disable2FA))
 
 // Role‐based test endpoint (only admin & superadmin)
 router.get(

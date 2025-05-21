@@ -27,7 +27,7 @@ const Enable2faPage: React.FC = () => {
                             danger
                             block
                             loading={disable2FA.isPending}
-                            onClick={() => disable2FA}
+                            onClick={() => disable2FA.mutate()}
                         >
                             Disable 2FA
                         </Button>

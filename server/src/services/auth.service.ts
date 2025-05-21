@@ -333,19 +333,17 @@ export const getOtpTtlService = async (email: string) => {
 export async function generate2FAService(
     email: string
 ): Promise<{ qrCode: string; secret: string }> {
-    if (!email) {
-        throw new CustomError("Email is required to enable 2FA", 400)
-    }
+    if (!email) throw new CustomError("Email is required to enable 2FA", 400)
 
     const secret = speakeasy.generateSecret({
         name: `Ultimate Resume (${email})`,
         length: 20,
     })
-
     if (!secret.otpauth_url) {
         throw new CustomError("Failed to generate 2FA secret", 500)
     }
 
+    // Only save the secret—do NOT set the enabled flag yet
     await repo.saveGoogleAuthSecret(email, secret.base32)
 
     let qrCode: string
@@ -354,7 +352,6 @@ export async function generate2FAService(
     } catch (err) {
         throw new CustomError("Failed to generate QR code image", 500, err)
     }
-
     return { qrCode, secret: secret.base32 }
 }
 
@@ -381,10 +378,12 @@ export async function verifyGoogle2FAService(
         token,
         window: 1,
     })
-
     if (!isValid) {
         throw new CustomError("Invalid 2FA token", 401)
     }
+
+    // mark 2FA as enabled
+    await repo.enableGoogleAuth(email)
 }
 
 export const disable2FAService = async (email: string): Promise<void> => {

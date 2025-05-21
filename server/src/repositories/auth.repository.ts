@@ -106,7 +106,7 @@ export const saveGoogleAuthSecret = async (
     try {
         await db.execute(
             `UPDATE users
-       SET google_auth_secret = ?, google_auth_enabled = true
+       SET google_auth_secret = ?
        WHERE email = ?`,
             [secret, email]
         )
@@ -115,6 +115,23 @@ export const saveGoogleAuthSecret = async (
             err.message || "Database error saving 2FA secret",
             500
         )
+    }
+}
+
+export const enableGoogleAuth = async (email: string): Promise<void> => {
+    const db = await Database.getInstance()
+    try {
+        const [res] = await db.execute<ResultSetHeader>(
+            `UPDATE users
+       SET google_auth_enabled = true
+       WHERE email = ?`,
+            [email]
+        )
+        if (res.affectedRows === 0) {
+            throw new CustomError("User not found when enabling 2FA", 404)
+        }
+    } catch (err: any) {
+        throw new CustomError(err.message || "Database error enabling 2FA", 500)
     }
 }
 

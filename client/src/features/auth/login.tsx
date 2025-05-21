@@ -15,7 +15,7 @@ const LoginPage = () => {
     const navigate = useNavigate()
     const login = useAuthStore((state) => state.login)
 
-    const mutation = useMutation({
+    const loginMutation = useMutation({
         mutationFn: loginApi,
         onSuccess: (response) => {
             // Remove first if user go for reset but not sending reset password
@@ -54,7 +54,7 @@ const LoginPage = () => {
     })
 
     const handleSubmit = (values: { email: string; password: string }) => {
-        mutation.mutate(values)
+        loginMutation.mutate(values)
     }
 
     return (
@@ -121,8 +121,8 @@ const LoginPage = () => {
                             htmlType="submit"
                             size="large"
                             block
-                            loading={mutation.isPending}
-                            disabled={mutation.isPending}
+                            loading={loginMutation.isPending}
+                            disabled={loginMutation.isPending}
                         >
                             LogIn
                         </Button>

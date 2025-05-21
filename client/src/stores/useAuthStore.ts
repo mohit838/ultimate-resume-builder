@@ -18,6 +18,7 @@ export interface AuthState {
     login: (token: string, user: User) => void
     logout: () => void
     setLoading: (value: boolean) => void
+    setIsEmailVerified: (value: boolean) => void
 }
 
 const useAuthStore = create<AuthState>()(
@@ -31,6 +32,13 @@ const useAuthStore = create<AuthState>()(
             logout: () =>
                 set({ isAuthenticated: false, token: null, user: null }),
             setLoading: (value) => set({ isLoading: value }),
+            setIsEmailVerified(value) {
+                set((state) => ({
+                    user: state.user
+                        ? { ...state.user, emailVerified: value }
+                        : null,
+                }))
+            },
         }),
         {
             name: "auth-storage",

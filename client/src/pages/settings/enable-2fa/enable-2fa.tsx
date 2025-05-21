@@ -1,4 +1,4 @@
-import { useGenerate2FA, useVerify2FA } from '@/hooks/use2FA'
+import { useGenerate2FA, useVerify2FA } from '@/hooks/use2fa'
 import useAuthStore from '@/stores/useAuthStore'
 import { Button, Card, Form, Input, Spin, Typography } from 'antd'
 import React, { useEffect } from 'react'
@@ -11,20 +11,23 @@ const Enable2faPage: React.FC = () => {
     const verify2FA = useVerify2FA()
     const [form] = Form.useForm()
 
-    // On mount: fetch QR + secret
+    // Fetch QR + secret on mount
     useEffect(() => {
         if (token) gen2FA.mutate()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token])
 
-    // Form submit to verify
+    // Handle form submit
     const onFinish = ({ code }: { code: string }) => {
         verify2FA.mutate(code)
     }
 
     return (
-        <div className="flex justify-center items-center min-h-screen">
-            <Card className="w-full max-w-md p-6">
+        <div
+            className="flex justify-center items-center px-4"
+            style={{ minHeight: 'calc(100vh - 4rem)' }}
+        >
+            <Card className="w-full max-w-md p-6 bg-white rounded-lg shadow-sm transition-shadow duration-200 hover:shadow-lg">
                 <Title level={3}>Enable Two-Factor Authentication</Title>
                 <Text>Scan the QR code below with your authenticator app.</Text>
 
@@ -41,7 +44,7 @@ const Enable2faPage: React.FC = () => {
                 </div>
 
                 {gen2FA.data?.secret && (
-                    <Text copyable code>
+                    <Text copyable code className="block text-center mb-4">
                         {gen2FA.data.secret}
                     </Text>
                 )}

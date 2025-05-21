@@ -1,4 +1,5 @@
 import {
+    disable2FASetup,
     generate2FASetup,
     verify2FASetup,
 } from "@/services/settings/2fa/2faService"
@@ -46,6 +47,30 @@ export function useVerify2FA() {
             notify.error(
                 (err?.response?.data as { message?: string }).message ||
                     "Invalid 2FA code"
+            )
+        },
+    })
+}
+
+export function useDisable2FA() {
+    const notify = useNotification()
+    const login = useAuthStore((s) => s.login)
+    const user = useAuthStore((s) => s.user)!
+    const token = useAuthStore((s) => s.token)!
+    const navigate = useNavigate()
+
+    return useMutation<void, AxiosError>({
+        mutationKey: ["disable2FA"],
+        mutationFn: disable2FASetup,
+        onSuccess: () => {
+            notify.success("Two-factor authentication disabled.")
+            login(token, { ...user, googleAuthEnabled: false })
+            navigate("/settings/enable-2fa", { replace: true })
+        },
+        onError: (err: AxiosError) => {
+            notify.error(
+                (err.response?.data as { message?: string })?.message ||
+                    "Failed to disable 2FA"
             )
         },
     })

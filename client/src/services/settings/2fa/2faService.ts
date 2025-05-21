@@ -16,3 +16,8 @@ export async function generate2FASetup(): Promise<TwoFASetup> {
 export async function verify2FASetup(token: string): Promise<void> {
     await api.post(`${endpoints.auth.verify2fa}`, { token })
 }
+
+// Disable 2FA
+export async function disable2FASetup(): Promise<void> {
+    await api.post(`${endpoints.auth.disable2fa}`)
+}

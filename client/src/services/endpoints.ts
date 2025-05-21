@@ -11,6 +11,7 @@ export const endpoints = {
         testRoleBase: "auth/admin-only",
         enable2fa: "auth/enable-2fa",
         verify2fa: "auth/verify-2fa",
+        disable2fa: "auth/disable-2fa",
         otpTtl: "auth/otp-ttl",
         requestOtp: "auth/request-otp",
     },

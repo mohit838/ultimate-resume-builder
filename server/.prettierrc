@@ -6,6 +6,10 @@
     "importOrder": ["^@/(.*)$", "^[./]"],
     "importOrderSeparation": true,
     "importOrderSortSpecifiers": true,
+
+    "plugins": ["@trivago/prettier-plugin-sort-imports"],
+    "pluginSearchDirs": false,
+
     "overrides": [
         {
             "files": "*.ts",

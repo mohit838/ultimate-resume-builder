@@ -26,5 +26,13 @@
         "tests/**/*.ts",
         "jest.config.ts"
     ],
-    "exclude": ["node_modules", "dist", "logs"]
+    "exclude": [
+        "node_modules",
+        "dist",
+        "logs",
+        "coverage",
+        "tests/__mocks__",
+        "tests/__fixtures__",
+        "tests/__snapshots__"
+    ]
 }

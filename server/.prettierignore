@@ -27,3 +27,7 @@ docker-compose.inventory.yml
 inventory.md
 package.json
 tsconfig.json
+tsconfig.build.json
+
+# Ignore coverage reports
+coverage/

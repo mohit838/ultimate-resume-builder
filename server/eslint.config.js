@@ -5,7 +5,7 @@ const prettierPlugin = require('eslint-plugin-prettier')
 module.exports = [
     {
         files: ['**/*.ts'],
-        ignores: ['node_modules', 'dist'],
+        ignores: ['dist', 'node_modules', 'coverage'],
         languageOptions: {
             parser: tsEslintParser,
             parserOptions: {
@@ -24,7 +24,15 @@ module.exports = [
             prettier: prettierPlugin,
         },
         rules: {
-            'prettier/prettier': 'error',
+            'prettier/prettier': 'off', // If you want to use prettier, you can enable this rule
+            '@typescript-eslint/no-unused-expressions': [
+                'error',
+                {
+                    allowShortCircuit: true,
+                    allowTernary: true,
+                    allowTaggedTemplates: true,
+                },
+            ],
             '@typescript-eslint/no-unused-vars': 'warn',
             '@typescript-eslint/explicit-module-boundary-types': 'off',
         },

@@ -6,6 +6,9 @@
     "importOrder": ["^@/(.*)$", "^[./]"],
     "importOrderSeparation": true,
     "importOrderSortSpecifiers": true,
+
+    "pluginSearchDirs": false,
+
     "overrides": [
         {
             "files": "*.ts",

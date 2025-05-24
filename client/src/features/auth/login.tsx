@@ -10,7 +10,7 @@ const LoginPage = () => {
     const loginMutation = useLogIn()
 
     const handleSubmit = (values: { email: string; password: string }) => {
-        loginMutation.mutate(values)
+        loginMutation.mutateAsync(values)
 
         if (loginMutation.isSuccess) {
             // Reset form fields after submission

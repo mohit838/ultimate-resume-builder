@@ -11,11 +11,20 @@ const Verify2FALoginPage: React.FC = () => {
     const verify2FA = useVerify2FA()
     const navigate = useNavigate()
 
+    console.log(user)
+
     // if someone lands here by mistake
     useEffect(() => {
-        if (!isAuthenticated) navigate('/login')
-        else if (!user?.googleAuthEnabled) navigate('/dashboard')
+        if (!isAuthenticated) {
+            navigate('/login', { replace: true })
+        } else if (user && !user.googleAuthEnabled) {
+            navigate('/dashboard', { replace: true })
+        }
     }, [isAuthenticated, user, navigate])
+
+    if (!isAuthenticated || (user && !user.googleAuthEnabled)) {
+        return null // or a loading spinner while redirecting
+    }
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4">

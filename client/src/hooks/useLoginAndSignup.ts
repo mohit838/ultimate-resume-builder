@@ -37,11 +37,14 @@ export const useLogIn = () => {
 
             success("Login successful!")
 
-            if (googleAuthEnabled) {
-                navigate("/verify-2fa-login", { replace: true })
-            } else {
-                navigate("/dashboard", { replace: true })
-            }
+            // Use setTimeout to ensure state is updated before navigation
+            setTimeout(() => {
+                if (googleAuthEnabled) {
+                    navigate("/verify-2fa-login", { replace: true })
+                } else {
+                    navigate("/dashboard", { replace: true })
+                }
+            }, 0)
         },
         onError: (err: AxiosError<{ message?: string }>) => {
             error(err?.response?.data?.message || "Login failed")

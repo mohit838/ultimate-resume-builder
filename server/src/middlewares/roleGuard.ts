@@ -1,5 +1,6 @@
-import { CustomError } from "@/errors/CustomError"
 import { NextFunction, Request, Response } from "express"
+
+import { CustomError } from "@/errors/CustomError"
 
 export const authorizeRoles = (...allowedRoles: string[]) => {
     return (req: Request, res: Response, next: NextFunction) => {

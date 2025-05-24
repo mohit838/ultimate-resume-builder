@@ -1,5 +1,6 @@
-import { EMAIL_SERVICE } from "@/config/AppConstant"
 import nodemailer from "nodemailer"
+
+import { EMAIL_SERVICE } from "@/config/AppConstant"
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",

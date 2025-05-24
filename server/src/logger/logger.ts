@@ -1,6 +1,7 @@
-import { DB_CONFIG } from "@/config/AppConstant"
 import { createLogger, format, transports } from "winston"
 import "winston-mongodb"
+
+import { DB_CONFIG } from "@/config/AppConstant"
 
 const mongoUri = DB_CONFIG.mongoUrl
 if (!mongoUri) throw new Error("MongoDB URI is not defined")

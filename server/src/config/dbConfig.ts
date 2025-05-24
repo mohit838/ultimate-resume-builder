@@ -1,4 +1,5 @@
 import mysql, { Pool } from "mysql2/promise"
+
 import { DB_CONFIG } from "../config/AppConstant"
 
 class Database {

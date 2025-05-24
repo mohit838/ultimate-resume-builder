@@ -1,5 +1,7 @@
-import logger from "@/logger/logger"
 import { NextFunction, Request, Response } from "express"
+
+import logger from "@/logger/logger"
+
 import { CustomError } from "./CustomError"
 
 export const errorHandler = (

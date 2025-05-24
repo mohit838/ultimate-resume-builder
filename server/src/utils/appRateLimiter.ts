@@ -1,5 +1,6 @@
-import redisClient from "@/config/redisClient"
 import rateLimit from "express-rate-limit"
+
+import redisClient from "@/config/redisClient"
 
 const appRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes

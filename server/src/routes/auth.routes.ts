@@ -1,18 +1,3 @@
-import { CustomError } from "@/errors/CustomError"
-import { asyncHandler } from "@/helper/hof"
-import {
-    allowExpiredAccessToken,
-    blockIfAuthenticated,
-    requireAuth,
-} from "@/middlewares/authGuard"
-import { authorizeRoles } from "@/middlewares/roleGuard"
-import {
-    forgotPassword,
-    loginSchema,
-    resetPassword,
-    signUpSchema,
-} from "@/middlewares/validations/auth.schema"
-import { validate } from "@/middlewares/validations/auth.validation"
 import express, { NextFunction, Request, Response } from "express"
 
 import {
@@ -30,6 +15,21 @@ import {
     verifyGoogle2FA,
     verifyOtp,
 } from "@/controllers/auth.controller"
+import { CustomError } from "@/errors/CustomError"
+import { asyncHandler } from "@/helper/hof"
+import {
+    allowExpiredAccessToken,
+    blockIfAuthenticated,
+    requireAuth,
+} from "@/middlewares/authGuard"
+import { authorizeRoles } from "@/middlewares/roleGuard"
+import {
+    forgotPassword,
+    loginSchema,
+    resetPassword,
+    signUpSchema,
+} from "@/middlewares/validations/auth.schema"
+import { validate } from "@/middlewares/validations/auth.validation"
 
 const router = express.Router()
 

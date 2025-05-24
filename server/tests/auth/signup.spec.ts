@@ -1,6 +1,7 @@
+import request from "supertest"
+
 import app from "@/app"
 import Database from "@/config/dbConfig"
-import request from "supertest"
 
 describe("POST /api/auth/signup", () => {
     const testEmail = `testuser+${Date.now()}@example.com`

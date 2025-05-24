@@ -1,6 +1,7 @@
+import express from "express"
+
 import { exportLogs, getLogs } from "@/controllers/logs.controller"
 import { asyncHandler } from "@/helper/hof"
-import express from "express"
 
 const router = express.Router()
 

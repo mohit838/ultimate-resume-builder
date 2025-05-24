@@ -1,6 +1,7 @@
-import { CustomError } from "@/errors/CustomError"
 import { NextFunction, Request, Response } from "express"
 import { ZodError, ZodSchema } from "zod"
+
+import { CustomError } from "@/errors/CustomError"
 
 export const validate =
     (schema: ZodSchema<any>) =>

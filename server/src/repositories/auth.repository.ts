@@ -1,8 +1,9 @@
+import { ResultSetHeader, RowDataPacket } from "mysql2"
+
 import Database from "@/config/dbConfig"
 import { CustomError } from "@/errors/CustomError"
 import { ISignUp, IUser } from "@/models/auth.model"
 import { nanoid as generateNanoId } from "@/utils/nanoIdGenerate"
-import { ResultSetHeader, RowDataPacket } from "mysql2"
 
 interface UserRow extends IUser, RowDataPacket {
     role: string

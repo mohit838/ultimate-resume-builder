@@ -1,6 +1,7 @@
+import jwt, { TokenExpiredError } from "jsonwebtoken"
+
 import { SERVICE_SECURITIES } from "@/config/AppConstant"
 import { CustomError } from "@/errors/CustomError"
-import jwt, { TokenExpiredError } from "jsonwebtoken"
 
 export interface JwtPayload {
     id: string

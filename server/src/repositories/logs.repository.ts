@@ -1,5 +1,6 @@
-import { DB_CONFIG } from "@/config/AppConstant"
 import { Collection, Db, MongoClient } from "mongodb"
+
+import { DB_CONFIG } from "@/config/AppConstant"
 
 let mongoClient: MongoClient | null = null
 

@@ -1,3 +1,5 @@
+import { Request, Response } from "express"
+
 import { CustomError } from "@/errors/CustomError"
 import { successResponse } from "@/helper/ApiResponse"
 import logger from "@/logger/logger"
@@ -16,7 +18,6 @@ import {
     verifyGoogle2FAService,
 } from "@/services/auth.service"
 import { JwtPayload } from "@/utils/jwt"
-import { Request, Response } from "express"
 
 // 1. Signup
 export const signUp = async (req: Request, res: Response) => {

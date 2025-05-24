@@ -1,3 +1,9 @@
+import bcrypt from "bcrypt"
+import { Request } from "express"
+import { JwtPayload } from "jsonwebtoken"
+import qrcode from "qrcode"
+import speakeasy from "speakeasy"
+
 import redisClient from "@/config/redisClient"
 import { CustomError } from "@/errors/CustomError"
 import { logLoginAttempt } from "@/logger/logLoginAttempt"
@@ -10,11 +16,7 @@ import {
     verifyRefreshToken,
 } from "@/utils/jwt"
 import { generateOTP } from "@/utils/otp"
-import bcrypt from "bcrypt"
-import { Request } from "express"
-import { JwtPayload } from "jsonwebtoken"
-import qrcode from "qrcode"
-import speakeasy from "speakeasy"
+
 import { sendOtpEmail } from "./otp.service"
 
 // const REFRESH_TOKEN_TTL = 60 * 60 * 24 * 7 // 7 days in seconds

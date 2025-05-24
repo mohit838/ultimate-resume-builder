@@ -1,5 +1,6 @@
-import { DB_CONFIG } from "@/config/AppConstant"
 import { createClient } from "redis"
+
+import { DB_CONFIG } from "@/config/AppConstant"
 
 let redisClientInstance: ReturnType<typeof createClient> | null = null
 

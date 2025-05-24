@@ -1,7 +1,8 @@
-import { successResponse } from "@/helper/ApiResponse"
-import { getLogsService } from "@/services/logs.service"
 import { Request, Response } from "express"
 import { Parser } from "json2csv"
+
+import { successResponse } from "@/helper/ApiResponse"
+import { getLogsService } from "@/services/logs.service"
 
 export const getLogs = async (req: Request, res: Response): Promise<void> => {
     const { type = "audit", limit = "50", skip = "0" } = req.query

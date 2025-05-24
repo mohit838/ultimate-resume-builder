@@ -4,6 +4,10 @@ import helmet from "helmet"
 import http from "http"
 import morgan from "morgan"
 
+// Mount routes
+import authRoutes from "@/routes/auth.routes"
+import logRoutes from "@/routes/logs.routes"
+
 import { ALLOWED_ORIGINS, SERVICE_CONFIG } from "./config/AppConstant"
 import Database from "./config/dbConfig"
 import redisClient from "./config/redisClient"
@@ -40,10 +44,6 @@ app.use(
         stream: { write: (msg) => logger.info(msg.trim()) },
     })
 )
-
-// Mount routes
-import authRoutes from "@/routes/auth.routes"
-import logRoutes from "@/routes/logs.routes"
 
 app.use("/api/auth", authRoutes)
 app.use("/api/logs", logRoutes)

@@ -20,7 +20,7 @@ import { generateOTP } from "@/utils/otp"
 import { sendOtpEmail } from "./otp.service"
 
 // const REFRESH_TOKEN_TTL = 60 * 60 * 24 * 7 // 7 days in seconds
-const REFRESH_TOKEN_TTL = 60 // 1 minute in seconds for testing
+const REFRESH_TOKEN_TTL = 600 // 10 minute in seconds for testing
 
 export const createSignUpService = async (data: ISignUp) => {
     // Prevent duplicate registrations

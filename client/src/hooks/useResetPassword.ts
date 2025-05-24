@@ -17,9 +17,10 @@ export const useResetPasswordMutation = () => {
         onSuccess: () => {
             localStorage.removeItem("refresh_token")
             localStorage.removeItem("auth-storage")
-            localStorage.removeItem("email_forgot")
             notify.success("Password reset successfully!")
-            navigate("/login")
+            navigate("/login", {
+                replace: true,
+            })
         },
         onError: (err: AxiosError<{ message?: string }>) => {
             notify.error(

@@ -11,8 +11,6 @@ const Verify2FALoginPage: React.FC = () => {
     const verify2FA = useVerify2FA()
     const navigate = useNavigate()
 
-    console.log(user)
-
     // if someone lands here by mistake
     useEffect(() => {
         if (!isAuthenticated) {

@@ -14,9 +14,8 @@ import ResetPasswordPage from "@/features/auth/reset-password"
 import ResetPasswordRequestPage from "@/features/auth/reset-password-request"
 import SignupPage from "@/features/auth/signup"
 import ResumePage from "@/features/resume/resume"
-import DashboardPage from "@/pages/dashboard/dashboard"
-import Enable2faPage from "@/pages/settings/enable-2fa/enable-2fa"
-import ProfilePage from "@/pages/settings/profile/profile"
+import DashboardIndexPage from "@/pages/dashboard"
+import ProfileIndexPage from "@/pages/settings/profile"
 
 export const publicPaths = [
     "/login",
@@ -29,7 +28,7 @@ export const publicPaths = [
 export const routeConfig: RouteItem[] = [
     {
         path: "/dashboard",
-        element: DashboardPage,
+        element: DashboardIndexPage,
         private: true,
         menu: {
             name: "Dashboard",
@@ -47,19 +46,10 @@ export const routeConfig: RouteItem[] = [
     },
     {
         path: "/settings/profile",
-        element: ProfilePage,
+        element: ProfileIndexPage,
         private: true,
         menu: {
             name: "Profile",
-            parent: "Settings",
-        },
-    },
-    {
-        path: "/settings/enable-2fa",
-        element: Enable2faPage,
-        private: true,
-        menu: {
-            name: "Enable 2FA",
             parent: "Settings",
         },
     },

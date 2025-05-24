@@ -15,10 +15,7 @@ const Enable2faPage: React.FC = () => {
     // 1) If 2FA is enabled, show disable button
     if (user?.googleAuthEnabled) {
         return (
-            <div
-                className="flex justify-center items-center px-4"
-                style={{ minHeight: 'calc(100vh - 4rem)' }}
-            >
+            <div className="flex justify-center items-center px-4">
                 <Card className="w-full max-w-md p-6 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200">
                     <Title level={3}>Two-Factor Authentication</Title>
                     <Text type="success">✅ 2FA is currently enabled.</Text>
@@ -41,10 +38,7 @@ const Enable2faPage: React.FC = () => {
     const setup = gen2FA.data
     if (!setup) {
         return (
-            <div
-                className="flex justify-center items-center px-4"
-                style={{ minHeight: 'calc(100vh - 4rem)' }}
-            >
+            <div className="flex justify-center items-center px-4">
                 <Card className="w-full max-w-md p-6 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200">
                     <Title level={3}>Enable Two-Factor Authentication</Title>
                     <Text>

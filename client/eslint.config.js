@@ -19,6 +19,8 @@ export default tseslint.config(
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
+            // allow you to use `any` explicitly (Only for client code)
+            '@typescript-eslint/no-explicit-any': 'off',
             'react-refresh/only-export-components': [
                 'warn',
                 { allowConstantExport: true },

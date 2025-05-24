@@ -67,7 +67,7 @@ export function useDisable2FA() {
             notify.success("Two-factor authentication disabled.")
             login(token, { ...user, googleAuthEnabled: false })
             queryClient.invalidateQueries({ queryKey: ["generate2FA"] })
-            navigate("/settings/enable-2fa", { replace: true })
+            navigate("/settings/profile", { replace: true })
         },
         onError: (err: AxiosError) => {
             notify.error(

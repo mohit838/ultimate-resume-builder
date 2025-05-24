@@ -119,57 +119,56 @@ const ProfilePage = () => {
 
     return (
         <div className="max-w-full mx-auto">
-            <Card className="shadow-xl rounded-xl border-0">
-                {/* Profile Header */}
-                <div
-                    className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 relative"
-                    style={{
-                        background:
-                            'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
-                    }}
-                >
-                    <div className="absolute -bottom-16 left-8">
-                        <Badge
-                            count={
-                                user.emailVerified ? (
-                                    <CheckCircleFilled
-                                        style={{
-                                            color: '#52c41a',
-                                            fontSize: 24,
-                                            backgroundColor: '#fff',
-                                            borderRadius: '50%',
-                                        }}
-                                    />
-                                ) : (
-                                    <CloseCircleFilled
-                                        style={{
-                                            color: '#52c41a',
-                                            fontSize: 24,
-                                        }}
-                                    />
-                                )
-                            }
-                            offset={[-10, 80]}
-                        >
-                            {user.name && (
-                                <Avatar
-                                    size={120}
+            {/* Profile Header */}
+            <div
+                className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 relative z-[1] rounded-t-xl flex items-center justify-start px-8 -mb-2"
+                style={{
+                    background:
+                        'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
+                }}
+            >
+                <div className="absolute -bottom-16 left-8">
+                    <Badge
+                        count={
+                            user.emailVerified ? (
+                                <CheckCircleFilled
                                     style={{
-                                        backgroundColor: '#4f46e5',
-                                        color: '#fff',
-                                        border: '4px solid white',
+                                        color: '#52c41a',
+                                        fontSize: 24,
+                                        backgroundColor: '#fff',
+                                        borderRadius: '50%',
                                     }}
-                                    className="border-4 border-white shadow-lg uppercase "
-                                >
-                                    <div className="text-7xl text-white flex items-center justify-center h-full w-full">
-                                        {user.name.charAt(0)}
-                                    </div>
-                                </Avatar>
-                            )}
-                        </Badge>
-                    </div>
+                                />
+                            ) : (
+                                <CloseCircleFilled
+                                    style={{
+                                        color: '#52c41a',
+                                        fontSize: 24,
+                                    }}
+                                />
+                            )
+                        }
+                        offset={[-10, 80]}
+                    >
+                        {user.name && (
+                            <Avatar
+                                size={120}
+                                style={{
+                                    backgroundColor: '#4f46e5',
+                                    color: '#fff',
+                                    border: '4px solid white',
+                                }}
+                                className="border-4 border-white shadow-lg uppercase "
+                            >
+                                <div className="text-7xl text-white flex items-center justify-center h-full w-full">
+                                    {user.name.charAt(0)}
+                                </div>
+                            </Avatar>
+                        )}
+                    </Badge>
                 </div>
-
+            </div>
+            <Card className="shadow-xl rounded-xl border-0">
                 <div className="pt-20 px-8 pb-8">
                     <Row gutter={[24, 24]}>
                         {/* Left Column - Profile Info */}

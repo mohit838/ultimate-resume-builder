@@ -2,15 +2,17 @@ import { loginApi, signupApi } from "@/services/auth/loginAndSignup"
 import useAuthStore from "@/stores/useAuthStore"
 import { useMutation } from "@tanstack/react-query"
 import { AxiosError } from "axios"
+import { useNavigate } from "react-router-dom"
 import { useNotification } from "./useNotification"
 
 export const useLogIn = () => {
-    const { error } = useNotification()
+    const { success, error } = useNotification()
     const { login } = useAuthStore()
+    const navigate = useNavigate()
 
     return useMutation({
         mutationFn: loginApi,
-        onSuccess: (response) => {
+        onSuccess: (data) => {
             const {
                 accessToken,
                 refreshToken,
@@ -20,7 +22,7 @@ export const useLogIn = () => {
                 role,
                 emailVerified,
                 googleAuthEnabled,
-            } = response.model
+            } = data.model
 
             localStorage.setItem("refresh_token", refreshToken)
 
@@ -32,6 +34,14 @@ export const useLogIn = () => {
                 emailVerified,
                 googleAuthEnabled,
             })
+
+            success("Login successful!")
+
+            if (googleAuthEnabled) {
+                navigate("/verify-2fa-login", { replace: true })
+            } else {
+                navigate("/dashboard", { replace: true })
+            }
         },
         onError: (err: AxiosError<{ message?: string }>) => {
             error(err?.response?.data?.message || "Login failed")

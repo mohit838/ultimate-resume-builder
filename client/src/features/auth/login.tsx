@@ -1,15 +1,12 @@
 import { useLogIn } from '@/hooks/useLoginAndSignup'
-import { useNotification } from '@/hooks/useNotification'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { Button, Card, Form, Input, Typography } from 'antd'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 const { Title, Text } = Typography
 
 const LoginPage = () => {
     const [loginForm] = Form.useForm()
-    const { success } = useNotification()
-    const navigate = useNavigate()
     const loginMutation = useLogIn()
 
     const handleSubmit = (values: { email: string; password: string }) => {
@@ -23,9 +20,6 @@ const LoginPage = () => {
                 { name: 'email', errors: [] },
                 { name: 'password', errors: [] },
             ])
-
-            success('Login successful!')
-            navigate('/dashboard')
         }
     }
 

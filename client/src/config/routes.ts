@@ -13,6 +13,7 @@ import OtpVerificationPage from "@/features/auth/otp-verification-page"
 import ResetPasswordPage from "@/features/auth/reset-password"
 import ResetPasswordRequestPage from "@/features/auth/reset-password-request"
 import SignupPage from "@/features/auth/signup"
+import Verify2FALoginPage from "@/features/auth/verify2FA-login-page"
 import ResumePage from "@/features/resume/resume"
 import DashboardIndexPage from "@/pages/dashboard"
 import ProfileIndexPage from "@/pages/settings/profile"
@@ -66,6 +67,11 @@ export const routeConfig: RouteItem[] = [
         path: "/login",
         element: LoginPage,
         private: false,
+    },
+    {
+        path: "/verify-2fa-login",
+        element: Verify2FALoginPage,
+        private: true,
     },
     {
         path: "/signup",

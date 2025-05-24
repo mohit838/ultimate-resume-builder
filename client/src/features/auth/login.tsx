@@ -1,60 +1,32 @@
+import { useLogIn } from '@/hooks/useLoginAndSignup'
 import { useNotification } from '@/hooks/useNotification'
-import { loginApi } from '@/services/auth/login'
-import useAuthStore from '@/stores/useAuthStore'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import { useMutation } from '@tanstack/react-query'
 import { Button, Card, Form, Input, Typography } from 'antd'
-import { AxiosError } from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
 
 const { Title, Text } = Typography
 
 const LoginPage = () => {
-    const [form] = Form.useForm()
-    const { success, error } = useNotification()
+    const [loginForm] = Form.useForm()
+    const { success } = useNotification()
     const navigate = useNavigate()
-    const login = useAuthStore((state) => state.login)
-
-    const loginMutation = useMutation({
-        mutationFn: loginApi,
-        onSuccess: (response) => {
-            // Remove first if user go for reset but not sending reset password
-            localStorage.removeItem('otp_verified')
-            localStorage.removeItem('email_forgot')
-
-            const {
-                accessToken,
-                refreshToken,
-                id,
-                name,
-                email,
-                role,
-                emailVerified,
-                googleAuthEnabled,
-            } = response.model
-
-            localStorage.setItem('refresh_token', refreshToken)
-
-            login(accessToken, {
-                id,
-                name,
-                email,
-                role,
-                emailVerified,
-                googleAuthEnabled,
-            })
-
-            form.resetFields()
-            success('Login successful!')
-            navigate('/dashboard')
-        },
-        onError: (err: AxiosError<{ message?: string }>) => {
-            error(err?.response?.data?.message || 'Login failed')
-        },
-    })
+    const loginMutation = useLogIn()
 
     const handleSubmit = (values: { email: string; password: string }) => {
         loginMutation.mutate(values)
+
+        if (loginMutation.isSuccess) {
+            // Reset form fields after submission
+            loginForm.resetFields()
+            // Optionally, you can also clear any previous error messages
+            loginForm.setFields([
+                { name: 'email', errors: [] },
+                { name: 'password', errors: [] },
+            ])
+
+            success('Login successful!')
+            navigate('/dashboard')
+        }
     }
 
     return (
@@ -70,6 +42,7 @@ const LoginPage = () => {
 
                 {/* Form */}
                 <Form
+                    form={loginForm}
                     name="login"
                     layout="vertical"
                     onFinish={handleSubmit}

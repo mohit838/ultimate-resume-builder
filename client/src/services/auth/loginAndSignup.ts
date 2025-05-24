@@ -28,3 +28,15 @@ export const loginApi = async (
     )
     return data
 }
+
+export const signupApi = async (payload: {
+    username: string
+    email: string
+    password: string
+}): Promise<{ message?: string }> => {
+    const { data } = await api.post<{ message?: string }>(
+        `${endpoints.auth.signUp}`,
+        payload
+    )
+    return data
+}

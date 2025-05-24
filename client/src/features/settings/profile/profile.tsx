@@ -442,7 +442,7 @@ const ProfilePage = () => {
                                             showIcon
                                             className="bg-blue-50 border-0"
                                         />
-                                        <div className="text-center">
+                                        <div className="text-center mt-2">
                                             {gen2FA.isPending ? (
                                                 <Spin />
                                             ) : (

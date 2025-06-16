@@ -4,13 +4,13 @@ import helmet from "helmet"
 import http from "http"
 import morgan from "morgan"
 
+import getRedisClient from "@/config/redisClient"
 // Mount routes
 import authRoutes from "@/routes/auth.routes"
 import logRoutes from "@/routes/logs.routes"
 
 import { ALLOWED_ORIGINS, SERVICE_CONFIG } from "./config/AppConstant"
 import Database from "./config/dbConfig"
-import redisClient from "./config/redisClient"
 import { errorHandler } from "./errors/errorHandler"
 import logger from "./logger/logger"
 import appRateLimiter from "./utils/appRateLimiter"
@@ -51,8 +51,9 @@ app.use("/api/logs", logRoutes)
 
 // Health check
 app.get("/health", async (_req: Request, res: Response) => {
+    const redis = await getRedisClient
     try {
-        await redisClient.ping()
+        await redis.ping()
         res.status(200).json({ msg: "Service health is ok!" })
     } catch (err: any) {
         res.status(500).json({
@@ -93,12 +94,13 @@ async function shutdown() {
     logger.info("⚙️  Shutting down gracefully…")
 
     server.close(async (closeErr) => {
+        const redis = await getRedisClient
         if (closeErr) {
             logger.error("Error closing HTTP server", closeErr)
             process.exit(1)
         }
         try {
-            redisClient.destroy()
+            redis.destroy()
             await Database.close()
             logger.info("✅ Closed Redis and MySQL connections.")
             process.exit(0)

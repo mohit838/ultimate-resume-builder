@@ -4,7 +4,7 @@ import { JwtPayload } from "jsonwebtoken"
 import qrcode from "qrcode"
 import speakeasy from "speakeasy"
 
-import redisClient from "@/config/redisClient"
+import getRedisClient from "@/config/redisClient"
 import { CustomError } from "@/errors/CustomError"
 import { logLoginAttempt } from "@/logger/logLoginAttempt"
 import { ILoginPayload, ISignUp } from "@/models/auth.model"
@@ -23,6 +23,11 @@ import { sendOtpEmail } from "./otp.service"
 const REFRESH_TOKEN_TTL = 600 // 10 minute in seconds for testing
 
 export const createSignUpService = async (data: ISignUp) => {
+    const redis = await getRedisClient
+
+    if (!data.name || !data.email || !data.password) {
+        throw new CustomError("Name, email, and password are required", 400)
+    }
     // Prevent duplicate registrations
     const existingUser = await repo.findUserByEmail(data.email)
     if (existingUser) {
@@ -32,7 +37,7 @@ export const createSignUpService = async (data: ISignUp) => {
     // Generate and store OTP
     const otp = generateOTP()
     try {
-        await redisClient.set(`otp_${data.email}`, otp, { EX: 600 }) // 10 minutes
+        await redis.set(`otp_${data.email}`, otp, { EX: 600 }) // 10 minutes
     } catch {
         throw new CustomError("Failed to generate OTP", 500)
     }
@@ -55,7 +60,7 @@ export const createSignUpService = async (data: ISignUp) => {
     }
 
     // Return TTL for front-end countdown
-    const ttl = await redisClient.ttl(`otp_${data.email}`)
+    const ttl = await redis.ttl(`otp_${data.email}`)
     return {
         id: nanoId,
         name: data.name,
@@ -66,6 +71,8 @@ export const createSignUpService = async (data: ISignUp) => {
 }
 
 export const userLoginService = async (data: ILoginPayload, req: Request) => {
+    const redis = await getRedisClient
+
     const user = await repo.findUserByEmail(data.email)
     const ip =
         req.ip ||
@@ -99,7 +106,7 @@ export const userLoginService = async (data: ILoginPayload, req: Request) => {
     })
 
     // Persist refresh token
-    await redisClient.set(`refresh_${user.nano_id}`, refreshToken, {
+    await redis.set(`refresh_${user.nano_id}`, refreshToken, {
         EX: REFRESH_TOKEN_TTL,
     })
 
@@ -119,6 +126,7 @@ export const userRefreshTokenService = async (
     refreshToken: string | string[] | undefined,
     accessUser: JwtPayload
 ) => {
+    const redis = await getRedisClient
     if (!refreshToken || typeof refreshToken !== "string") {
         throw new CustomError("Refresh token missing or corrupted", 400)
     }
@@ -129,7 +137,7 @@ export const userRefreshTokenService = async (
     }
 
     const key = `refresh_${decoded.id}`
-    const stored = await redisClient.get(key)
+    const stored = await redis.get(key)
     if (stored && stored !== refreshToken) {
         throw new CustomError("Refresh token reuse detected", 401)
     }
@@ -145,7 +153,7 @@ export const userRefreshTokenService = async (
         role: decoded.role,
     })
 
-    await redisClient.set(key, newRefreshToken, { EX: REFRESH_TOKEN_TTL })
+    await redis.set(key, newRefreshToken, { EX: REFRESH_TOKEN_TTL })
 
     return {
         accessToken: newAccessToken,
@@ -154,6 +162,7 @@ export const userRefreshTokenService = async (
 }
 
 export const userLogOutService = async (authHeader: string | undefined) => {
+    const redis = await getRedisClient
     if (!authHeader) {
         throw new CustomError("Authorization header missing", 400)
     }
@@ -178,7 +187,7 @@ export const userLogOutService = async (authHeader: string | undefined) => {
     }
 
     const ttl = payload.exp - Math.floor(Date.now() / 1000)
-    await redisClient.set(`bl_${token}`, "1", { EX: ttl })
+    await redis.set(`bl_${token}`, "1", { EX: ttl })
 
     return true
 }
@@ -190,11 +199,12 @@ export const userVerifyOtpService = async ({
     email: string
     otp: number
 }) => {
+    const redis = await getRedisClient
     if (!email || typeof otp !== "number") {
         throw new CustomError("Email and numeric OTP required", 400)
     }
 
-    const stored = await redisClient.get(`otp_${email}`)
+    const stored = await redis.get(`otp_${email}`)
     if (!stored) {
         throw new CustomError("OTP expired or not found", 400)
     }
@@ -208,7 +218,7 @@ export const userVerifyOtpService = async ({
     }
 
     await repo.markEmailVerified(email)
-    await redisClient.del(`otp_${email}`)
+    await redis.del(`otp_${email}`)
 
     const accessToken = createAccessToken({
         id: user.nano_id,
@@ -222,7 +232,7 @@ export const userVerifyOtpService = async ({
     })
 
     // Persist refresh token
-    await redisClient.set(`refresh_${user.nano_id}`, refreshToken, {
+    await redis.set(`refresh_${user.nano_id}`, refreshToken, {
         EX: REFRESH_TOKEN_TTL,
     })
 
@@ -241,6 +251,7 @@ export const userAgainRequestOtpService = async ({
 }: {
     email: string
 }) => {
+    const redis = await getRedisClient
     if (!email) {
         throw new CustomError("Email not provided", 400)
     }
@@ -254,13 +265,13 @@ export const userAgainRequestOtpService = async ({
     }
 
     const otp = generateOTP()
-    await redisClient.set(`otp_${email}`, otp, { EX: 600 })
+    await redis.set(`otp_${email}`, otp, { EX: 600 })
     const sent = await sendOtpEmail(email, otp)
     if (!sent) {
         throw new CustomError("Failed to send OTP email", 503)
     }
 
-    const ttl = await redisClient.ttl(`otp_${email}`)
+    const ttl = await redis.ttl(`otp_${email}`)
     return {
         message: "OTP sent to email. Please verify to continue.",
         ttl,
@@ -268,6 +279,7 @@ export const userAgainRequestOtpService = async ({
 }
 
 export const requestOtpForForgotPasswordService = async (email: string) => {
+    const redis = await getRedisClient
     if (!email) {
         throw new CustomError("Email not provided", 400)
     }
@@ -283,13 +295,13 @@ export const requestOtpForForgotPasswordService = async (email: string) => {
     }
 
     const otp = generateOTP()
-    await redisClient.set(`otp_${email}`, otp, { EX: 600 })
+    await redis.set(`otp_${email}`, otp, { EX: 600 })
     const sent = await sendOtpEmail(email, otp)
     if (!sent) {
         throw new CustomError("Failed to send OTP email", 503)
     }
 
-    const ttl = await redisClient.ttl(`otp_${email}`)
+    const ttl = await redis.ttl(`otp_${email}`)
     return {
         message: "OTP sent to email. Please verify to complete reset.",
         ttl,
@@ -319,7 +331,8 @@ export const requestForResetPasswordService = async (
 }
 
 export const getOtpTtlService = async (email: string) => {
-    const ttl = await redisClient.ttl(`otp_${email}`)
+    const redis = await getRedisClient
+    const ttl = await redis.ttl(`otp_${email}`)
     if (ttl < 0) {
         throw new CustomError("OTP not found or expired", 404)
     }

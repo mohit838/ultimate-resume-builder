@@ -4,16 +4,14 @@ import { DB_CONFIG } from "@/config/AppConstant"
 
 let redisClientInstance: ReturnType<typeof createClient> | null = null
 
-const getRedisClient = () => {
+const getRedisClient = async () => {
     if (!redisClientInstance) {
         redisClientInstance = createClient({ url: DB_CONFIG.redisUrl })
         redisClientInstance.on("error", (err) =>
-            console.error("Redis Client Error:", err)
+            console.error("Redis error:", err)
         )
-
-        redisClientInstance.connect().then(() => {
-            console.log("Connected to Redis successfully.")
-        })
+        await redisClientInstance.connect()
+        console.log("Connected to Redis successfully.")
     }
     return redisClientInstance
 }

@@ -1,10 +1,3 @@
-Absolutely! Here's a clean and beginner-friendly `README.md` that documents your **Ultimate Resume Builder** project, explains the structure, how to run it, and why it’s built the way it is.
-
-You can copy this directly into your project root as `README.md`.
-
----
-
-````md
 # 🧾 Ultimate Resume Builder
 
 Ultimate Resume Builder is a full-stack backend application designed to help users manage categories (and eventually resumes, users, etc.) using Node.js, MySQL, and Redis — with a clean, modular codebase that's easy to scale and maintain.
@@ -38,6 +31,7 @@ src/
 ├── logger/            # Logger config (for now: uses morgan)
 └── index.ts           # Main app entry point
 ```
+
 ````
 
 ---
@@ -139,6 +133,4 @@ If you have questions, open an issue or message the creator!
 - MongoDB usage once integrated
 - Deployment steps
 - Link to Postman collection or GitHub repo
-
-Want me to generate a Postman/ThunderClient export too?
-```
+````

@@ -1,35 +1,23 @@
-# First stage: Build dependencies and compile the app
+# 1) build your app with dev tools
 FROM node:22-alpine AS build
-
-# Set the working directory
 WORKDIR /app
-
-# Copy package.json and package-lock.json to install dependencies
 COPY package*.json ./
-
-# Install dependencies (only production dependencies will be kept in the final image)
-RUN npm install
-
-# Copy the rest of the application files to the working directory
+RUN npm ci
 COPY . .
-
-# Build the application (assuming your app has a build script in package.json)
 RUN npm run build
 
-
-# Second stage: Production environment with only necessary files
-FROM node:22-alpine
-
-# Set the working directory
+# 2) produce a slim runtime image
+FROM node:22-alpine AS runtime
 WORKDIR /app
 
-# Copy only necessary files from the build stage
+# install only production deps
 COPY --from=build /app/package*.json ./
-COPY --from=build /app/node_modules ./node_modules
+RUN npm ci --omit=dev \
+  && npm cache clean --force \
+  && rm -rf /var/cache/apk/*
+
+# copy build output
 COPY --from=build /app/dist ./dist
 
-# Expose the port your app runs on (adjust as needed)
-EXPOSE 1234
-
-# Start the application
-CMD ["npm", "run", "start"]
+EXPOSE 3333
+CMD ["node","dist/server.js"]

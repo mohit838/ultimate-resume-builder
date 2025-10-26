@@ -114,7 +114,7 @@ Even though it starts small, this setup works well for growing apps like:
 
 ## 🤝 Contributing
 
-This project is in early development. If you're learning Node.js or clean backend architecture — you're welcome to clone, fork, or contribute.
+This project is in early development. If you're learning Node.js or clean backend architecture, you're welcome to clone, fork, or contribute.
 
 ---
 
@@ -124,13 +124,3 @@ If you have questions, open an issue or message the creator!
 
 ---
 
-```
-
----
-
-### ✅ You Can Edit This Later To Add:
-- Swagger once added
-- MongoDB usage once integrated
-- Deployment steps
-- Link to Postman collection or GitHub repo
-````

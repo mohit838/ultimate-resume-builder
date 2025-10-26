@@ -23,8 +23,7 @@ logs/
 src/config/swagger.ts
 swagger.yaml
 
-docker-compose.inventory.yml
-inventory.md
+docker-compose.auth.yml
 package.json
 tsconfig.json
 tsconfig.build.json

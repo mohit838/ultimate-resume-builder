@@ -17,11 +17,11 @@ const jwtRefreshSecret =
 
 // Create Access Token (short-lived)
 export const createAccessToken = (payload: JwtPayload): string =>
-    jwt.sign(payload, jwtSecret, { expiresIn: "1m" })
+    jwt.sign(payload, jwtSecret, { expiresIn: "5m" })
 
 // Create Refresh Token (longer lifespan)
 export const createRefreshToken = (payload: JwtPayload): string =>
-    jwt.sign(payload, jwtRefreshSecret, { expiresIn: "2m" })
+    jwt.sign(payload, jwtRefreshSecret, { expiresIn: "10m" })
 
 // Verify Access Token
 export const verifyAccessToken = (token: string): JwtPayload => {

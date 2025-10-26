@@ -7,8 +7,7 @@
     "importOrderSeparation": true,
     "importOrderSortSpecifiers": true,
 
-    "plugins": ["@trivago/prettier-plugin-sort-imports"],
-    "pluginSearchDirs": false,
+    "pluginSearchDirs": ["./node_modules"],
 
     "overrides": [
         {

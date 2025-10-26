@@ -1,6 +1,5 @@
-import api from '@/api/axios'
+import { useSignup } from '@/hooks/useLoginAndSignup'
 import { useNotification } from '@/hooks/useNotification'
-import { endpoints } from '@/services/endpoints'
 import useSignUpStore from '@/stores/useSignUpStore'
 import { handleAxiosError } from '@/utils/handleAxiosError'
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
@@ -14,27 +13,33 @@ const SignupPage = () => {
     const { success, error } = useNotification()
     const { setEmail, setSignedUp } = useSignUpStore()
     const navigate = useNavigate()
+    const signupFn = useSignup()
 
     const handleSubmit = async (values: {
-        name: string
+        username: string
         email: string
         password: string
     }) => {
         try {
-            const response = await api.post(endpoints.auth.signUp, {
-                username: values.name,
-                email: values.email,
-                password: values.password,
-            })
-            const { message: msg } = response.data
-            success(msg || 'Signup successful! Please verify OTP.')
+            signupFn.mutateAsync(values)
 
-            // If the signup is successful, navigate to the OTP verification page
-            // and set the email in the store for OTP verification and signup true
-            if (msg) {
-                setEmail(values.email)
-                setSignedUp(true)
-                navigate('/verify-otp')
+            if (signupFn.isSuccess) {
+                // Reset form fields after submission
+                form.resetFields()
+                // Optionally, you can also clear any previous error messages
+                form.setFields([
+                    { name: 'username', errors: [] },
+                    { name: 'email', errors: [] },
+                    { name: 'password', errors: [] },
+                ])
+                // Handle success response
+                const msg = signupFn.data?.message
+                if (msg) {
+                    success(msg || 'Signup successful! Please verify OTP.')
+                    setEmail(values.email)
+                    setSignedUp(true)
+                    navigate('/verify-otp')
+                }
             }
         } catch (err: unknown) {
             handleAxiosError(err, error)
@@ -60,7 +65,7 @@ const SignupPage = () => {
                 >
                     <Form.Item
                         label="Name"
-                        name="name"
+                        name="username"
                         rules={[
                             {
                                 required: true,
